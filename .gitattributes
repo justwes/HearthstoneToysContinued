@@ -1,0 +1,18 @@
+# Normalise text in Git and in the working tree, including on Windows.
+* text=auto
+*.lua text eol=lf
+*.toc text eol=lf
+*.ToC text eol=lf
+*.md text eol=lf
+LICENSE text eol=lf
+.gitignore text eol=lf
+.gitattributes text eol=lf
+
+# Preserve binary assets without text conversion.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.tga binary
+*.blp binary
+*.ogg binary
+*.mp3 binary

@@ -1,0 +1,14 @@
+## Interface: 120100
+## Title: |cFF00a7ffHearthstone Toys Continued|r
+## Author: Wes (fork), Gerlock (original)
+## Notes: Independent fork of Gerlock's Hearthstone Toys 1.12.9. /hstc for options
+## IconTexture: Interface\Icons\INV_Misc_Rune_01
+## Version: 1.0.0-alpha.1
+## SavedVariables: HearthstoneToysContinuedDB
+## DefaultState: enabled
+
+HearthstoneToysContinued_Main.lua
+HearthstoneToysContinued_UIFrames.lua
+HearthstoneToysContinued_Functions.lua
+HearthstoneToysContinued_OptionsPanel.lua
+HearthstoneToysContinued_EventHandlers.lua

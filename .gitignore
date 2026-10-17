@@ -1,0 +1,29 @@
+# Windows and macOS metadata
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Local editor state
+.vscode/
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# Local archives and generated release output
+*.zip
+/dist/
+/releases/
+
+# Logs and local backups
+*.log
+*.bak
+
+# Private local configuration and credentials
+.env
+.env.*
+!.env.example
+
+# WoW account data must not be committed
+WTF/
+SavedVariables/
