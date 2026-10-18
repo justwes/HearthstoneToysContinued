@@ -456,9 +456,8 @@ function addon.RefreshUI()
         addon.lockPositionCheckbox:SetChecked(_G[addon.CONST.DB_NAME].generalSettings.lockPosition)
     end
     addon.mainFrame:RegisterForDrag("LeftButton")  -- Register drag
-    if addon.presetsDropdown then
-        UIDropDownMenu_SetText(addon.presetsDropdown, "Select Preset")
-        UIDropDownMenu_Initialize(addon.presetsDropdown, addon.InitializePresetsDropdown)
+    if addon.presetsDropdown and addon.ResetPresetSelection then
+        addon.ResetPresetSelection()
     end
     addon.LoadMainFramePosition()
 

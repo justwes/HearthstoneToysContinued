@@ -472,17 +472,28 @@ function addon.OptionsPanel.Initialize()
         local presetNameInput
         local presetsDropdown
 
-        local function InitializePresetsDropdown(self, level)
-            local info = UIDropDownMenu_CreateInfo()
+        local function InitializePresetsDropdown(owner, rootDescription)
             for presetName in pairs(_G[addon.CONST.DB_NAME].presets or {}) do
-                info.text = presetName
-                info.func = function()
-                    UIDropDownMenu_SetText(presetsDropdown, presetName)
-                    presetNameInput:SetText(presetName)
-                end
-                UIDropDownMenu_AddButton(info, level)
+                rootDescription:CreateRadio(
+                    presetName,
+                    function(name)
+                        return owner.selectedPresetName == name
+                    end,
+                    function(name)
+                        owner.selectedPresetName = name
+                        presetNameInput:SetText(name)
+                    end,
+                    presetName
+                )
             end
         end
+
+        local function ResetPresetSelection()
+            presetsDropdown.selectedPresetName = nil
+            presetsDropdown:GenerateMenu()
+        end
+
+        addon.ResetPresetSelection = ResetPresetSelection
 
         local function SavePreset(presetName)
             presetName = presetName or (presetNameInput and presetNameInput:GetText())
@@ -499,8 +510,8 @@ function addon.OptionsPanel.Initialize()
                     yOfs = _G[addon.CONST.DB_NAME].mainFramePosition.yOfs,
                 }
                 presetNameInput:SetText("")
-                UIDropDownMenu_SetText(presetsDropdown, "Select Preset")
-                UIDropDownMenu_Initialize(presetsDropdown, InitializePresetsDropdown)
+                ResetPresetSelection()
+                presetsDropdown:GenerateMenu()
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: "  .. addon.CONST.RESET_COLOR .. "Preset: '" .. presetName .. "' saved.")
             else
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Please enter a valid preset name.")
@@ -518,8 +529,8 @@ function addon.OptionsPanel.Initialize()
                 _G[addon.CONST.DB_NAME].mainFramePosition.yOfs = preset.yOfs
                 addon.LoadMainFramePosition()
                 presetNameInput:SetText("")
-                UIDropDownMenu_SetText(presetsDropdown, "Select Preset")
-                UIDropDownMenu_Initialize(presetsDropdown, InitializePresetsDropdown)
+                ResetPresetSelection()
+                presetsDropdown:GenerateMenu()
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Preset: '" .. presetName .. "' loaded.")
             else
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Preset: '" .. tostring(presetName) .. "' not found.")
@@ -532,8 +543,8 @@ function addon.OptionsPanel.Initialize()
                 _G[addon.CONST.DB_NAME].presets[presetName] = nil
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Preset: '" .. presetName .. "' deleted.")
                 presetNameInput:SetText("")
-                UIDropDownMenu_SetText(presetsDropdown, "Select Preset")
-                UIDropDownMenu_Initialize(presetsDropdown, InitializePresetsDropdown)
+                ResetPresetSelection()
+                presetsDropdown:GenerateMenu()
             else
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Preset: '" .. tostring(presetName) .. "' not found.")
             end
@@ -548,27 +559,22 @@ function addon.OptionsPanel.Initialize()
         presetSelectLabel:SetPoint("TOPLEFT", presetLabel, "BOTTOMLEFT", 20, -10)
         presetSelectLabel:SetText("Preset:")
 
-        presetsDropdown = CreateFrame("Frame", addon.CONST.ADDON_NAME .. "PresetDropdown", pagePosition, "UIDropDownMenuTemplate")
-        presetsDropdown:SetPoint("LEFT", presetSelectLabel, "RIGHT", -10, -2)
-        UIDropDownMenu_SetWidth(presetsDropdown, 160)
-        UIDropDownMenu_SetText(presetsDropdown, "Select Preset")
-
-        addon.InitializePresetsDropdown = InitializePresetsDropdown
-        UIDropDownMenu_Initialize(presetsDropdown, InitializePresetsDropdown)
+        presetsDropdown = CreateFrame(
+            "DropdownButton",
+            addon.CONST.ADDON_NAME .. "PresetDropdown",
+            pagePosition,
+            "WowStyle1DropdownTemplate"
+        )
+        presetsDropdown:SetPoint(
+            "LEFT", presetSelectLabel, "RIGHT", 10, 0
+        )
+        presetsDropdown:SetWidth(160)
+        presetsDropdown:SetDefaultText("Select Preset")
+        presetsDropdown:SetupMenu(InitializePresetsDropdown)
         addon.presetsDropdown = presetsDropdown
 
-        local ddText = _G[presetsDropdown:GetName().."Text"]
-        ddText:ClearAllPoints()
-        ddText:SetPoint("CENTER", presetsDropdown, "CENTER", 0, 0)
-        ddText:SetJustifyH("CENTER")
-
         local function GetSelectedPresetName()
-            -- UIDropDownMenu_GetText returns the visible label
-            local t = UIDropDownMenu_GetText(presetsDropdown)
-            if not t or t == "" or t == "Select Preset" then
-                return nil
-            end
-            return t
+            return presetsDropdown.selectedPresetName
         end
 
         local loadPresetButton = CreateFrame("Button", addon.CONST.ADDON_NAME .. "LoadPresetButton", pagePosition, "UIPanelButtonTemplate")
@@ -592,7 +598,7 @@ function addon.OptionsPanel.Initialize()
             local presetName = GetSelectedPresetName()
             if presetName then
                 DeletePreset(presetName)
-                UIDropDownMenu_SetText(presetsDropdown, "Select Preset")
+                ResetPresetSelection()
             else
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Select a preset to delete.")
             end
@@ -625,7 +631,7 @@ function addon.OptionsPanel.Initialize()
             if presetName and presetName ~= "" then
                 SavePreset(presetName)
                 presetNameInput:SetText("")
-                UIDropDownMenu_Initialize(presetsDropdown, InitializePresetsDropdown)
+                presetsDropdown:GenerateMenu()
             else
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Enter a preset name to save.")
             end
