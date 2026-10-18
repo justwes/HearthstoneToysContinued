@@ -299,8 +299,6 @@ function addon.UpdateCooldown()
                 -- Old-style: start, dur, enabled, modRate
                 return a, b, c, d
             end
-        elseif _G.GetSpellCooldown then
-            return _G.GetSpellCooldown(id)
         end
         return nil, nil, nil, nil
     end
@@ -662,9 +660,6 @@ local function GetSpellCooldownSafe(id)
         else
             return a or 0, b or 0, c or 0, d
         end
-    elseif _G.GetSpellCooldown then
-        local s, d, e = _G.GetSpellCooldown(id)
-        return s or 0, d or 0, e or 0, 1
     end
     return 0, 0, 0, 1
 end
