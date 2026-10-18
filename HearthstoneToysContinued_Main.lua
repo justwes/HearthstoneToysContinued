@@ -27,9 +27,9 @@ addon.CONST = {
     xPositionInput, yPositionInput,
     UpdateCooldown,
     optionsCategoryId,
-    ADDON_VERSION = "1.0.0-alpha.1", -- Update this with each release
-    ADDON_UPDATES = "First development alpha of Wes's independent fork, based on Gerlock's Hearthstone Toys 1.12.9. Separate addon identity, settings and /hstc command. Further API cleanup and in-game testing are pending.",
-    WELCOME_MESSAGE = "Type '/hstc' for options. Development alpha maintained by Wes, based on Gerlock's Hearthstone Toys. See the fork README for project and support details.",
+    ADDON_VERSION = "1.0.0", -- Update this with each release
+    ADDON_UPDATES = "Wes's independent fork, based on Gerlock's Hearthstone Toys 1.12.9. Separate addon identity, settings and /hstc command.",
+    WELCOME_MESSAGE = "Type '/hstc' for options. Development maintained by Wes, based on Gerlock's Hearthstone Toys. See the fork README for project and support details.",
 }
 
 addon.isProfessionRequired = false

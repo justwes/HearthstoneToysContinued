@@ -796,8 +796,10 @@ function addon.OptionsPanel.Initialize()
         helpText:SetWidth(500)
         helpText:SetJustifyH("LEFT")
         helpText:SetText(
-            "Independent development alpha maintained by Wes.\n" ..
-            "Based on Hearthstone Toys 1.12.9 by Gerlock.\n" ..
+            "Independent fork maintained by Wes.\n" ..
+            "Based on Hearthstone Toys 1.12.9 by Gerlock.\n\n" ..
+            "Downloads and updates:\n" ..
+            "https://www.curseforge.com/wow/addons/hearthstone-toys-continued\n\n" ..
             "Original project (credit):\n" ..
             "https://www.curseforge.com/wow/addons/hearthstone-toys\n\n" ..
             "For fork support, see the README supplied with this addon."

@@ -1,0 +1,40 @@
+name: Package and release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build preview ZIP without publishing
+        if: github.event_name == 'workflow_dispatch'
+        uses: BigWigsMods/packager@v2
+        with:
+          args: -d
+
+      - name: Publish tagged release
+        if: github.event_name == 'push'
+        uses: BigWigsMods/packager@v2
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Save ZIP for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: HearthstoneToysContinued-package
+          path: .release/*.zip
+          if-no-files-found: error

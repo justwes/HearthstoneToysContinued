@@ -1,5 +1,19 @@
 # Changelog
 
+No unreleased changes.
+
+## 1.0.0 — 18 October 2026
+
+- Promote the initial testing build to the first stable release.
+- Remove development-alpha wording from the addon version and About text.
+- Add automated release packaging and publishing through GitHub Actions.
+- Exclude Git metadata and development files from release ZIPs.
+- Retain the compatibility fixes and independent addon identity introduced in the initial build.
+
+The previous build was published on CurseForge as a Release for testing,
+despite carrying an alpha version label. No errors or bugs have been
+reported since publication.
+
 ## Unreleased
 
 No additional changes beyond the development alpha below yet. GitHub and CurseForge publication are pending.

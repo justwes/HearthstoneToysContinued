@@ -1,0 +1,9 @@
+package-as: HearthstoneToysContinued
+
+enable-nolib-creation: no
+
+ignore:
+
+- RELEASE.md
+- scripts
+- tests
