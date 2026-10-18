@@ -275,38 +275,40 @@ function addon.OptionsPanel.Initialize()
 
         addon.positions = {"LEFT", "RIGHT", "ABOVE", "BELOW"}
 
-        local positionDropdown = CreateFrame("Frame", addon.CONST.ADDON_NAME .. "PositionDropdown", pageDisplay, "UIDropDownMenuTemplate")
-        positionDropdown:SetPoint("TOPLEFT", toyPosHeader, "BOTTOMLEFT", 20, -10)
-        UIDropDownMenu_SetWidth(positionDropdown, 120)
+                local positionDropdown = CreateFrame(
+            "DropdownButton",
+            addon.CONST.ADDON_NAME .. "PositionDropdown",
+            pageDisplay,
+            "WowStyle1DropdownTemplate"
+        )
+        positionDropdown:SetPoint(
+            "TOPLEFT", toyPosHeader, "BOTTOMLEFT", 20, -10
+        )
+        positionDropdown:SetWidth(160)
+        positionDropdown:SetDefaultText("Left")
+        addon.positionDropdown = positionDropdown
 
-        local function PositionDropdown_OnClick(selfArg)
-            UIDropDownMenu_SetSelectedID(positionDropdown, selfArg:GetID())
-            db.specificSettings.toyFramePosition = addon.positions[selfArg:GetID()]
+        local function IsPositionSelected(position)
+            local currentDB = SafeGetDB()
+            return (currentDB.specificSettings.toyFramePosition or "LEFT") == position
+        end
+
+        local function SetPosition(position)
+            local currentDB = SafeGetDB()
+            currentDB.specificSettings.toyFramePosition = position
             if addon.UpdateToyButtonPositions then
                 addon.UpdateToyButtonPositions()
             end
         end
 
-        UIDropDownMenu_Initialize(positionDropdown, function(selfDD, level)
-            local info = UIDropDownMenu_CreateInfo()
-            for index, pos in ipairs(addon.positions) do
-                info = UIDropDownMenu_CreateInfo()
-                info.text = pos:sub(1,1) .. pos:sub(2):lower()
-                info.value = pos
-                info.func = PositionDropdown_OnClick
-                UIDropDownMenu_AddButton(info, level)
+        positionDropdown:SetupMenu(function(owner, rootDescription)
+            for _, position in ipairs(addon.positions) do
+                local label = position:sub(1, 1) .. position:sub(2):lower()
+                rootDescription:CreateRadio(
+                    label, IsPositionSelected, SetPosition, position
+                )
             end
         end)
-
-        local selectedPositionIndex = 1
-        for i, pos in ipairs(addon.positions) do
-            if pos == (db.specificSettings.toyFramePosition or "LEFT") then
-                selectedPositionIndex = i
-                break
-            end
-        end
-        UIDropDownMenu_SetSelectedID(positionDropdown, selectedPositionIndex)
-        UIDropDownMenu_JustifyText(positionDropdown, "LEFT")
 
         -- Size header
         local sizeHeader = pageDisplay:CreateFontString(nil, "ARTWORK", "GameFontNormal")

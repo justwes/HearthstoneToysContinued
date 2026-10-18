@@ -463,16 +463,8 @@ function addon.RefreshUI()
     addon.LoadMainFramePosition()
 
     -- Refresh the Toy Button Position Section
-    if addon.positionDropdown then
-        local selectedPositionIndex
-        for i, pos in ipairs(addon.positions) do
-            if pos == _G[addon.CONST.DB_NAME].specificSettings.toyFramePosition then
-                selectedPositionIndex = i
-                break
-            end
-        end
-        UIDropDownMenu_SetSelectedID(addon.positionDropdown, selectedPositionIndex or 1)
-        UIDropDownMenu_SetText(addon.positionDropdown, addon.positions[selectedPositionIndex or 1])
+        if addon.positionDropdown then
+        addon.positionDropdown:GenerateMenu()
     end
     
     -- Refresh Size Settings Section
