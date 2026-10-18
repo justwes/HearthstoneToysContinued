@@ -28,7 +28,9 @@ addon.CONST = {
     UpdateCooldown,
     optionsCategoryId,
     ADDON_VERSION = "1.0.0", -- Update this with each release
-    ADDON_UPDATES = "Wes's independent fork, based on Gerlock's Hearthstone Toys 1.12.9. Separate addon identity, settings and /hstc command.",
+        ADDON_UPDATES = "Version 1.0.0\n\n" ..
+        "First stable release following the initial testing build.\n\n" ..
+        "Removed development-alpha labels and added the CurseForge download link to the About page.",
     WELCOME_MESSAGE = "Type '/hstc' for options. Development maintained by Wes, based on Gerlock's Hearthstone Toys. See the fork README for project and support details.",
 }
 

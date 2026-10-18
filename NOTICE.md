@@ -22,6 +22,6 @@ The original maintainer's Git history was not included in the release archive. T
 - Maintainer: Wes.
 - Initial development version: `1.0.0-alpha.1`.
 - GitHub repository: https://github.com/justwes/HearthstoneToysContinued
-- CurseForge release page: not published yet.
+- CurseForge release page: https://www.curseforge.com/wow/addons/hearthstone-toys-continued
 
 The independent fork uses the `HearthstoneToysContinued` addon identity and `HearthstoneToysContinuedDB` saved-variable database. The original project's URLs above identify the upstream source and licence, not the support destination for this fork.
