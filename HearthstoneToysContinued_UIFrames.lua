@@ -189,7 +189,7 @@ function addon.UIFrames.Initialize()
         local itemID = actionList[randomIndex]
 
         local isToy = PlayerHasToy(itemID)
-        local isSpell = IsSpellKnown(itemID)
+        local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
         local itemCount = C_Item.GetItemCount(itemID)
 
         if isToy then
@@ -467,7 +467,7 @@ function addon.CreateButton(itemID, parent, index)
     toyActionButton:SetSize(addon.buttonSize, addon.buttonSize)
 
     local isToy = PlayerHasToy(itemID)
-    local isSpell = IsSpellKnown(itemID)
+    local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
     local texture
     local tooltipFunc
 

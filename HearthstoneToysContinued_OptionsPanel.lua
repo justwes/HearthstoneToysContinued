@@ -686,7 +686,7 @@ function addon.OptionsPanel.Initialize()
                     elseif entry.type == "item" then
                         db.toySettings[itemID] = (C_Item.GetItemCount(itemID) or 0) > 0
                     elseif entry.type == "spell" then
-                        db.toySettings[itemID] = IsSpellKnown(itemID)
+                        db.toySettings[itemID] = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
                     else
                         db.toySettings[itemID] = false
                     end

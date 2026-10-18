@@ -52,7 +52,7 @@ function addon.InitializeAvailableToys()
                 table.insert(addon.CONST.availableToys, {id = itemID, type = itemType})
             end
         elseif itemType == "spell" then
-            if IsSpellKnown(itemID) then
+            if C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false) then
                 table.insert(addon.CONST.availableToys, {id = itemID, type = itemType})
             end
         end
@@ -76,7 +76,7 @@ function addon.InitializeIncludedToys()
                     if entry.type == "toy" then
                         isToy = PlayerHasToy(itemID)
                     elseif entry.type == "spell" then
-                        isSpell = IsSpellKnown(itemID)
+                        isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
                     elseif entry.type == "item" then
                         isItem = C_Item.GetItemInfo(itemID) ~= nil
                     end
@@ -163,7 +163,7 @@ function addon.CreateToyButtons()
         
         for index, itemID in ipairs(addon.CONST.includeToys) do
             local isToy = PlayerHasToy(itemID)
-            local isSpell = IsSpellKnown(itemID)
+            local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
             local itemCount = C_Item.GetItemCount(itemID)
 
             -- addon.DebugPrint(string.format("ItemID %s: isToy=%s, isSpell=%s, itemCount=%s",
@@ -175,7 +175,7 @@ function addon.CreateToyButtons()
 
     for _, itemID in ipairs(addon.CONST.includeToys) do
         local isToy = PlayerHasToy(itemID)
-        local isSpell = IsSpellKnown(itemID)
+        local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
         
         if isToy or isSpell then
             local toyActionButton = addon.CreateButton(itemID, addon.toyFrame, index)
