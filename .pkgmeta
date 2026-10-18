@@ -3,11 +3,10 @@ package-as: HearthstoneToysContinued
 enable-nolib-creation: no
 
 ignore:
-
-- RELEASE.md
-- scripts
-- tests
+  - RELEASE.md
+  - scripts
+  - tests
 
 manual-changelog:
-filename: CHANGELOG.md
-markup-type: markdown
+  filename: CHANGELOG.md
+  markup-type: markdown
