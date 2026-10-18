@@ -228,7 +228,7 @@ function addon.FlavorMessage()
     if messageCount == 0 then
         local fallback = "No flavor messages available."
         if addon.flavorTextOutputChannel == "say" then
-            SendChatMessage(fallback, "SAY")
+            C_ChatInfo.SendChatMessage(fallback, "SAY")
         else
             print(addon.CONST.ADDON_TEXT_COLOR .. fallback .. addon.CONST.RESET_COLOR)
         end
@@ -244,10 +244,10 @@ function addon.FlavorMessage()
             -- print(addon.CONST.ADDON_TEXT_COLOR .. "No target selected. Cannot send message." .. addon.CONST.RESET_COLOR)
             return
         end
-        SendChatMessage(selectedMessage, "SAY", nil, targetName)
+        C_ChatInfo.SendChatMessage(selectedMessage, "SAY", nil, targetName)
     else
         if addon.flavorTextOutputChannel == "say" then
-            SendChatMessage(selectedMessage, "SAY")
+            C_ChatInfo.SendChatMessage(selectedMessage, "SAY")
         else
             print(addon.CONST.ADDON_TEXT_COLOR .. selectedMessage .. addon.CONST.RESET_COLOR)
         end
