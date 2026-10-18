@@ -348,22 +348,18 @@ end
 function addon.HighlightIcon()
     if not addon.mainFrame then return end
 
-    -- Optional: tint the icon slightly
     local tex = addon.mainFrame.texture or addon.mainFrame:GetNormalTexture()
     if tex then
         tex:SetVertexColor(1, 1, 0.85)
     end
 
-    -- Blizzard glow if it exists, else custom animated glow
-    if type(ActionButton_ShowOverlayGlow) == "function" then
-        ActionButton_ShowOverlayGlow(addon.mainFrame)
-
-    elseif addon.mainFrame.customGlow then
-        addon.mainFrame.customGlow:Show()
-        if addon.mainFrame.customGlow.customGlowPulse then
-            addon.mainFrame.customGlow.customGlowPulse:Play()
+    local glow = addon.mainFrame.customGlow
+    if glow then
+        glow:Show()
+        if glow.customGlowPulse then
+            glow.customGlowPulse:Play()
         else
-            addon.mainFrame.customGlow:SetAlpha(0.9)
+            glow:SetAlpha(0.9)
         end
     end
 
@@ -380,15 +376,13 @@ function addon.ResetIconHighlight()
         tex:SetVertexColor(1, 1, 1)
     end
 
-    if type(ActionButton_HideOverlayGlow) == "function" then
-        ActionButton_HideOverlayGlow(addon.mainFrame)
-
-    elseif addon.mainFrame.customGlow then
-        if addon.mainFrame.customGlow.customGlowPulse then
-            addon.mainFrame.customGlow.customGlowPulse:Stop()
+    local glow = addon.mainFrame.customGlow
+    if glow then
+        if glow.customGlowPulse then
+            glow.customGlowPulse:Stop()
         end
-        addon.mainFrame.customGlow:SetAlpha(0.0)
-        addon.mainFrame.customGlow:Hide()
+        glow:SetAlpha(0)
+        glow:Hide()
     end
 end
 
