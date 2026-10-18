@@ -7,6 +7,7 @@
 LICENSE text eol=lf
 .gitignore text eol=lf
 .gitattributes text eol=lf
+.pkgmeta text eol=lf
 
 # Preserve binary assets without text conversion.
 *.png binary

@@ -7,3 +7,7 @@ ignore:
 - RELEASE.md
 - scripts
 - tests
+
+manual-changelog:
+filename: CHANGELOG.md
+markup-type: markdown
