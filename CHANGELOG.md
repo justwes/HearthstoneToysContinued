@@ -4,8 +4,25 @@ No unreleased changes.
 
 ## 1.0.1 — 18 October 2026
 
+- Update the interface target to WoW Retail 12.1.5 (120105).
 - Replace deprecated GetItemInfo calls with C_Item.GetItemInfo.
-- Verified in-game: buttons, icons and tooltips work without Lua errors.
+- Replace deprecated IsSpellKnown calls with equivalent spellbook checks, preserving player-only checks with overrides excluded.
+- Replace deprecated SendChatMessage calls with C_ChatInfo.SendChatMessage.
+- Remove obsolete GetSpellCooldown fallback calls.
+- Migrate the position and preset dropdowns to Blizzard's modern menu system.
+- Remove obsolete overlay-glow hooks and use the existing custom highlight animation.
+
+### Testing
+
+Each group of changes was tested in-game before proceeding:
+
+- Item buttons, icons and tooltips.
+- Spell ownership checks and related button behaviour.
+- Flavour messages.
+- Cooldown displays.
+- Position selection and persistence.
+- Preset saving, loading and deletion.
+- Highlight animation and automatic clearing after five seconds.
 
 ## 1.0.0 — 18 October 2026
 
@@ -18,10 +35,6 @@ No unreleased changes.
 The previous build was published on CurseForge as a Release for testing,
 despite carrying an alpha version label. No errors or bugs have been
 reported since publication.
-
-## Unreleased
-
-No additional changes beyond the development alpha below yet. GitHub and CurseForge publication are pending.
 
 ## 1.0.0-alpha.1 — development snapshot, 17 October 2026
 

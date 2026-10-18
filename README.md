@@ -2,7 +2,7 @@
 
 An independent fork of **Hearthstone Toys 1.12.9**, originally created by **Gerlock (Gerlock-ArgentDawn US)** for World of Warcraft Retail. Fork maintenance and compatibility fixes are by **Wes**.
 
-**Current version: `1.0.0`.** The first stable release of Hearthstone Toys Continued.
+**Current version: `1.0.1`.** API compatibility and dropdown-menu updates for WoW Retail 12.1.5.
 
 Original project: https://www.curseforge.com/wow/addons/hearthstone-toys
 
@@ -23,7 +23,7 @@ Report fork bugs and feature requests at: https://github.com/justwes/Hearthstone
 | Internal addon name and frame-name prefix | `HearthstoneToysContinued`       |
 | Saved variables                           | `HearthstoneToysContinuedDB`     |
 | Options command                           | `/hstc`                          |
-| Current version                           | `1.0.0`                          |
+| Current version                           | `1.0.1`                          |
 | Upstream source baseline                  | Hearthstone Toys `1.12.9`        |
 
 The fork uses separate settings, frame names, commands and reset-popup identifiers. It does not read or migrate `HearthstoneToysDB`, claim `/hst`, or overwrite the original addon's folder. Existing positions and selections from the original are not automatically imported. Both addons can remain installed; simultaneous operation still needs an in-game coexistence test.
@@ -91,7 +91,7 @@ Use BugGrabber/BugSack to capture errors and clear previous entries before each 
 
 This fork has its own version history, based on upstream Hearthstone Toys 1.12.9. The manifest and ADDON_VERSION in HearthstoneToysContinued_Main.lua must match. Stable releases use matching annotated Git tags, such as v1.0.0. Pushing a version tag triggers automated packaging and publication.
 
-Record future work under **Unreleased** in the changelog, then move it into the version being released. Record the tested WoW build and update the Interface value only after checking compatibility. The current `120100` Interface value was inherited from upstream and has not been independently certified by this review.
+Record future work under **Unreleased** in the changelog, then move it into the version being released. The current interface target is WoW Retail 12.1.5 (`120105`). The API and dropdown changes in 1.0.1 were tested in-game individually; see CHANGELOG.md for the test scope.
 
 For CurseForge, package runtime files and documentation inside one top-level `HearthstoneToysContinued/` folder. Exclude `.git` and local editor files. A GitHub source archive is not automatically a correctly packaged addon release.
 

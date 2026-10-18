@@ -27,9 +27,12 @@ addon.CONST = {
     xPositionInput, yPositionInput,
     UpdateCooldown,
     optionsCategoryId,
-        ADDON_VERSION = "1.0.1", -- Update this with each release
+         ADDON_VERSION = "1.0.1", -- Update this with each release
         ADDON_UPDATES = "Version 1.0.1\n\n" ..
-            "Updated deprecated item-information API calls to C_Item.GetItemInfo.",
+            "Updated item information, spell ownership and chat message APIs.\n\n" ..
+            "Migrated position and preset dropdowns to Blizzard's modern menu system.\n\n" ..
+            "Removed obsolete spell cooldown fallbacks and switched highlighting to the existing custom glow.\n\n" ..
+            "Updated the interface target to WoW Retail 12.1.5.",
     WELCOME_MESSAGE = "Type '/hstc' for options. Development maintained by Wes, based on Gerlock's Hearthstone Toys. See the fork README for project and support details.",
 }
 
