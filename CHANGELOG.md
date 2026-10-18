@@ -2,6 +2,11 @@
 
 No unreleased changes.
 
+## 1.0.1 — 18 October 2026
+
+- Replace deprecated GetItemInfo calls with C_Item.GetItemInfo.
+- Verified in-game: buttons, icons and tooltips work without Lua errors.
+
 ## 1.0.0 — 18 October 2026
 
 - Promote the initial testing build to the first stable release.

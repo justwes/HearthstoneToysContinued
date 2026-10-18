@@ -445,9 +445,9 @@ local function SetButtonTexture(toyActionButton, itemID, texture, retries)
             elseif C_Spell.GetSpellTexture then
                 -- Try fetching spell texture
                 retryTexture = C_Spell.GetSpellTexture(itemID)
-            elseif GetItemInfo then
+            elseif C_Item.GetItemInfo then
                 -- Try fetching item info
-                _, _, retryTexture = GetItemInfo(itemID)
+                _, _, retryTexture = C_Item.GetItemInfo(itemID)
             else
                 -- No available methods to fetch texture
                 retryTexture = nil
@@ -476,7 +476,7 @@ function addon.CreateButton(itemID, parent, index)
         local _, toyName, toyTexture = C_ToyBox.GetToyInfo(itemID)
         texture = toyTexture
         tooltipFunc = function(self)
-            if GetItemInfo(itemID) then
+            if C_Item.GetItemInfo(itemID) then
                 GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
                 GameTooltip:SetToyByItemID(itemID)
                 GameTooltip:Show()
@@ -507,10 +507,10 @@ function addon.CreateButton(itemID, parent, index)
         toyActionButton._cdID   = itemID
 
     else
-        local itemName, _, _, _, _, _, _, _, _, itemTexture = GetItemInfo(itemID)
+        local itemName, _, _, _, _, _, _, _, _, itemTexture = C_Item.GetItemInfo(itemID)
         texture = itemTexture
         tooltipFunc = function(self)
-            if GetItemInfo(itemID) then
+            if C_Item.GetItemInfo(itemID) then
                 GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
                 GameTooltip:SetItemByID(itemID)
                 GameTooltip:Show()

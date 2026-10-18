@@ -78,7 +78,7 @@ function addon.InitializeIncludedToys()
                     elseif entry.type == "spell" then
                         isSpell = IsSpellKnown(itemID)
                     elseif entry.type == "item" then
-                        isItem = GetItemInfo(itemID) ~= nil
+                        isItem = C_Item.GetItemInfo(itemID) ~= nil
                     end
                     break
                 end
