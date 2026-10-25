@@ -28,7 +28,7 @@ jobs:
       - name: Verify release environment
         if: github.event_name == 'push'
         env:
-          GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_API_TOKEN: ${{ github.token }}
         run: |
           echo "Release tag: $GITHUB_REF_NAME"
           echo "Repository: $GITHUB_REPOSITORY"
@@ -48,7 +48,7 @@ jobs:
         uses: BigWigsMods/packager@v2
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_API_TOKEN: ${{ github.token }}
 
       - name: Save ZIP for download
         uses: actions/upload-artifact@v4
