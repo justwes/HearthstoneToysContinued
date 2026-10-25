@@ -25,6 +25,24 @@ jobs:
         with:
           args: -d
 
+      - name: Verify release environment
+        if: github.event_name == 'push'
+        env:
+          GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Release tag: $GITHUB_REF_NAME"
+          echo "Repository: $GITHUB_REPOSITORY"
+
+          if [ -n "$GH_API_TOKEN" ]; then
+            echo "GitHub token: Present"
+          else
+            echo "::error::GitHub token is missing"
+            exit 1
+          fi
+
+          echo "Tags pointing at HEAD:"
+          git tag --points-at HEAD
+
       - name: Publish tagged release
         if: github.event_name == 'push'
         uses: BigWigsMods/packager@v2
