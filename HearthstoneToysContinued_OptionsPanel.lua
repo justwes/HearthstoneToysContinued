@@ -260,6 +260,19 @@ function addon.OptionsPanel.Initialize()
         local showButtonOnMouseOverLabel = pageGeneral:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         showButtonOnMouseOverLabel:SetPoint("LEFT", showButtonOnMouseOverCheckbox, "RIGHT", 5, 0)
         showButtonOnMouseOverLabel:SetText("Hide button until mouseover")
+
+        -- Optional swap between list and random Hearthstone click actions
+        local reverseClickActionsCheckbox = CreateFrame("CheckButton", nil, pageGeneral, "ChatConfigCheckButtonTemplate")
+        reverseClickActionsCheckbox:SetPoint("TOPLEFT", showButtonOnMouseOverCheckbox, "BOTTOMLEFT", 0, -8)
+        reverseClickActionsCheckbox:SetChecked(db.specificSettings.reverseClickActions == true)
+        reverseClickActionsCheckbox:SetScript("OnClick", function(self)
+            db.specificSettings.reverseClickActions = self:GetChecked() == true
+        end)
+        addon.reverseClickActionsCheckbox = reverseClickActionsCheckbox
+
+        local reverseClickActionsLabel = pageGeneral:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        reverseClickActionsLabel:SetPoint("LEFT", reverseClickActionsCheckbox, "RIGHT", 5, 0)
+        reverseClickActionsLabel:SetText("Reverse left-click and Shift-click actions")
     end
 
     ------------------------------------------------
@@ -861,6 +874,9 @@ function addon.OptionsPanel.Initialize()
         end
         if addon.showButtonOnMouseOverCheckbox then
             addon.showButtonOnMouseOverCheckbox:SetChecked(db.specificSettings.showButtonOnMouseOver)
+        end
+        if addon.reverseClickActionsCheckbox then
+            addon.reverseClickActionsCheckbox:SetChecked(db.specificSettings.reverseClickActions == true)
         end
         if addon.lockPositionCheckbox then
             addon.lockPositionCheckbox:SetChecked(db.generalSettings.lockPosition)

@@ -27,12 +27,13 @@ addon.CONST = {
     xPositionInput, yPositionInput,
     UpdateCooldown,
     optionsCategoryId,
-         ADDON_VERSION = "1.0.1", -- Update this with each release
-        ADDON_UPDATES = "Version 1.0.1\n\n" ..
-            "Updated item information, spell ownership and chat message APIs.\n\n" ..
-            "Migrated position and preset dropdowns to Blizzard's modern menu system.\n\n" ..
-            "Removed obsolete spell cooldown fallbacks and switched highlighting to the existing custom glow.\n\n" ..
-            "Updated the interface target to WoW Retail 12.1.5.",
+        ADDON_VERSION = "1.1.0", -- Update this with each release
+        ADDON_UPDATES = "Version 1.1.0\n\n" ..
+            "NEW: Reverse left-click and Shift-click actions in General Settings.\n\n" ..
+            "NEW: Hold Ctrl + Left-click and drag to reposition the button.\n\n" ..
+            "NEW: Updated tooltips and a one-time What's New announcement.\n\n" ..
+            "These improvements were inspired by a user feature request.\n" ..
+            "Have an idea? Feature requests and suggestions are always welcome!",
     WELCOME_MESSAGE = "Type '/hstc' for options. Development maintained by Wes, based on Gerlock's Hearthstone Toys. See the fork README for project and support details.",
 }
 
@@ -169,7 +170,36 @@ addon.defaults = {
         showButtonOnMouseOver = false,
         toyFramePosition = "LEFT",
         buttonSize = 44,
+        reverseClickActions = false,
     },
+}
+
+-- Feature-specific notice ID. This is intentionally independent of the addon version.
+-- Keep the acknowledgement outside addon.defaults so restoring preferences
+-- does not cause an already acknowledged notice to appear again.
+local CLICK_CONTROLS_NOTICE_ID = "click-controls-v1"
+local CLICK_CONTROLS_POPUP_KEY = "HEARTHSTONETOYSCONTINUED_CLICK_CONTROLS_NOTICE"
+
+StaticPopupDialogs[CLICK_CONTROLS_POPUP_KEY] = {
+    text = "|cFF00a7ffHearthstone Toys Continued|r\n\n" ..
+        "What's New: Button Controls\n\n" ..
+        "|cFFFFD100Moving the button has changed!|r\n" ..
+        "Hold Ctrl + Left-click and drag to reposition the button. " ..
+        "Regular dragging no longer moves it.\n\n" ..
+        "|cFFFFD100Customise your clicks|r\n" ..
+        "The original controls are still the default:\n" ..
+        "Left-click: Open the toy list\n" ..
+        "Shift + Left-click: Use a random Hearthstone\n\n" ..
+        "You can reverse these actions in the addon's General settings. " ..
+        "Right-click still opens settings, and Lock Position still prevents dragging.",
+    button1 = "Got it!",
+    OnAccept = function()
+        _G[addon.CONST.DB_NAME].lastSeenFeatureNotice = CLICK_CONTROLS_NOTICE_ID
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = false,
+    preferredIndex = 3,
 }
 
 -- Initialize saved variables
@@ -210,6 +240,16 @@ function addon.InitializeAddon()
     -- Initialize components
     addon.UIFrames.Initialize()
     addon.OptionsPanel.Initialize()
+
+    -- Display once after initialization, and only mark it seen on acknowledgement.
+    -- Delaying avoids competing with the initial UI setup.
+    if _G[addon.CONST.DB_NAME].lastSeenFeatureNotice ~= CLICK_CONTROLS_NOTICE_ID then
+        C_Timer.After(1, function()
+            if _G[addon.CONST.DB_NAME].lastSeenFeatureNotice ~= CLICK_CONTROLS_NOTICE_ID then
+                StaticPopup_Show(CLICK_CONTROLS_POPUP_KEY)
+            end
+        end)
+    end
 
     C_Timer.After(0.2, function()
         -- Register Slash Command

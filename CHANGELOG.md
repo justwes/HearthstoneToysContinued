@@ -2,7 +2,28 @@
 
 No unreleased changes.
 
-## 1.0.1 — 18 October 2026
+## [1.1.0] - 2026-10-25
+
+### Added
+
+- New option to reverse the default left-click and Shift-click actions.
+  - Default: Left-click opens the Hearthstone list; Shift-click activates a random Hearthstone.
+  - Reversed: Left-click activates a random Hearthstone; Shift-click opens the list.
+- Ctrl + Left-click and drag to reposition the main button.
+- Updated button tooltip explaining the available controls.
+- One-time What's New popup introducing the new features.
+
+### Changed
+
+- Button movement now requires holding Ctrl while dragging, preventing accidental repositioning.
+- Existing click behaviour remains the default unless explicitly changed in General Settings.
+
+### Community
+
+- These improvements were developed in response to a user feature request.
+- Additional feature requests and suggestions are welcome through GitHub or CurseForge.
+
+## [1.0.1] — 18 October 2026
 
 - Update the interface target to WoW Retail 12.1.5 (120105).
 - Replace deprecated GetItemInfo calls with C_Item.GetItemInfo.
@@ -24,7 +45,7 @@ Each group of changes was tested in-game before proceeding:
 - Preset saving, loading and deletion.
 - Highlight animation and automatic clearing after five seconds.
 
-## 1.0.0 — 18 October 2026
+## [1.0.0] — 18 October 2026
 
 - Promote the initial testing build to the first stable release.
 - Remove development-alpha wording from the addon version and About text.
@@ -36,7 +57,7 @@ The previous build was published on CurseForge as a Release for testing,
 despite carrying an alpha version label. No errors or bugs have been
 reported since publication.
 
-## 1.0.0-alpha.1 — development snapshot, 17 October 2026
+## [1.0.0-alpha.1] — development snapshot, 17 October 2026
 
 Initial independent fork by Wes, based on Gerlock's Hearthstone Toys 1.12.9. This version has been assigned in source but has not been published. The uploaded Windows copy was compared with the original release ZIP on 17 October 2026.
 

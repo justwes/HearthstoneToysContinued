@@ -134,7 +134,7 @@ function addon.UIFrames.Initialize()
     addon.mainFrame:Hide()
 
     --------------------------------------------------------------------
-    -- Secure button (ALWAYS receives hover/click; only does secure action on Shift)
+    -- Secure button (receives hover/click and performs configured random action)
     --------------------------------------------------------------------
     addon.secureButton = CreateFrame("Button", nil, addon.mainFrame, "SecureActionButtonTemplate")
     addon.secureButton:SetAllPoints(addon.mainFrame)
@@ -149,9 +149,16 @@ function addon.UIFrames.Initialize()
         GameTooltip:SetOwner(self, "ANCHOR_CURSOR")
         GameTooltip:ClearLines()
         GameTooltip:SetText(addon.CONST.ADDON_TEXT_COLOR .. addon.CONST.ADDON_DISPLAY_NAME .. addon.CONST.RESET_COLOR, 1, 1, 1, 1, true)
-        GameTooltip:AddLine("Left-click: Toy buttons", 1, 1, 1)
+        local reversed = _G[addon.CONST.DB_NAME].specificSettings.reverseClickActions == true
+        if reversed then
+            GameTooltip:AddLine("Left-click: Use random toy", 1, 1, 1)
+            GameTooltip:AddLine("Shift + Left-click: Toy buttons", 1, 1, 1)
+        else
+            GameTooltip:AddLine("Left-click: Toy buttons", 1, 1, 1)
+            GameTooltip:AddLine("Shift + Left-click: Use random toy", 1, 1, 1)
+        end
+        GameTooltip:AddLine("Ctrl + Left-click and drag: Move button", 1, 1, 1)
         GameTooltip:AddLine("Right-click: Options panel", 1, 1, 1)
-        GameTooltip:AddLine("Shift-click: Use random toy", 1, 1, 1)
         GameTooltip:Show()
 
         if _G[addon.CONST.DB_NAME].specificSettings.showButtonOnMouseOver then
@@ -171,8 +178,8 @@ function addon.UIFrames.Initialize()
     -- Local state
     --------------------------------------------------------------------
     local randomActionTriggered = false
+    local clickAction = nil
     local isDragging = false
-    local lastMouseX, lastMouseY
 
     --------------------------------------------------------------------
     -- Random action picker
@@ -203,11 +210,33 @@ function addon.UIFrames.Initialize()
         end
     end
 
+    -- Ctrl always takes priority. Otherwise the setting determines
+    -- whether Shift or an unmodified click uses a random Hearthstone.
+    local function getClickAction()
+        if IsControlKeyDown() then
+            return "move"
+        end
+
+        local reversed = _G[addon.CONST.DB_NAME].specificSettings.reverseClickActions == true
+        if IsShiftKeyDown() ~= reversed then
+            return "random"
+        end
+        return "list"
+    end
+
+    -- Clear any previously configured secure action before another click.
+    local function clearRandomAction(self)
+        self:SetAttribute("type", nil)
+        self:SetAttribute("toy", nil)
+        self:SetAttribute("spell", nil)
+        self:SetAttribute("item", nil)
+        randomActionTriggered = false
+    end
+
     --------------------------------------------------------------------
-    -- Mouse down: start drag tracking + (if Shift) prepare secure action
+    -- Mouse down: decide action once, with Ctrl taking priority
     --------------------------------------------------------------------
     addon.secureButton:SetScript("OnMouseDown", function(self, button)
-        -- HARD COMBAT GUARD: block ALL interaction
         if InCombatLockdown() then
             PrintNotUsableInCombat()
             return
@@ -217,10 +246,17 @@ function addon.UIFrames.Initialize()
 
         if button == "LeftButton" then
             isDragging = false
-            lastMouseX, lastMouseY = GetCursorPosition()
+            clickAction = getClickAction()
+            clearRandomAction(self)
 
-            -- Shift-left: configure secure action for random (out of combat only)
-            if IsShiftKeyDown() then
+            if clickAction == "move" then
+                if not _G[addon.CONST.DB_NAME].generalSettings.lockPosition then
+                    addon.mainFrame:StartMoving()
+                end
+                return
+            end
+
+            if clickAction == "random" then
                 local actionType, actionID = selectRandomAction()
                 if actionType and actionID then
                     self:SetAttribute("type", actionType)
@@ -229,53 +265,33 @@ function addon.UIFrames.Initialize()
                 else
                     print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " ..
                         addon.CONST.RESET_COLOR .. "No valid action found.")
-                    self:SetAttribute("type", nil)
-                    randomActionTriggered = false
                 end
 
-                if _G[addon.CONST.DB_NAME].specificSettings.showChatMessage then
+                if randomActionTriggered and _G[addon.CONST.DB_NAME].specificSettings.showChatMessage then
                     addon.FlavorMessage()
                 end
-
-                return
             end
-
-            -- Normal left: allow dragging if unlocked
-            if not _G[addon.CONST.DB_NAME].generalSettings.lockPosition then
-                addon.mainFrame:StartMoving()
-            end
-
         elseif button == "RightButton" and not IsShiftKeyDown() then
             Settings.OpenToCategory(addon.OptionsPanel.optionsCategoryId)
         end
     end)
 
     --------------------------------------------------------------------
-    -- Mouse up: stop moving + if not dragged and not shift, toggle toyFrame
+    -- Mouse up: finish movement or toggle list, never both
     --------------------------------------------------------------------
     addon.secureButton:SetScript("OnMouseUp", function(self, button)
-        -- HARD COMBAT GUARD: block ALL interaction
-        if InCombatLockdown() then
-            -- PrintNotUsableInCombat()
-            return
-        end
-
+        if InCombatLockdown() then return end
         if button ~= "LeftButton" then return end
 
         addon.mainFrame:StopMovingOrSizing()
 
-        local newMouseX, newMouseY = GetCursorPosition()
-        if (lastMouseX ~= newMouseX) or (lastMouseY ~= newMouseY) then
-            isDragging = true
-        end
-
-        -- If Shift is held, this click was meant for secure action; don't toggle frame
-        if IsShiftKeyDown() then
+        if clickAction == "move" then
             addon.SaveMainFramePosition()
+            clickAction = nil
             return
         end
 
-        if not isDragging then
+        if clickAction == "list" and not isDragging then
             if addon.toyFrame:IsShown() then
                 addon.toyFrame:Hide()
                 if _G[addon.CONST.DB_NAME].generalSettings.playSoundWhenFrameShown then
@@ -289,18 +305,15 @@ function addon.UIFrames.Initialize()
             end
         end
 
-        addon.SaveMainFramePosition()
+        clickAction = nil
     end)
 
-
     --------------------------------------------------------------------
-    -- Drag handlers (dragging the secure button moves the mainFrame)
+    -- Drag handlers: Ctrl + Left-drag only
     --------------------------------------------------------------------
     addon.secureButton:SetScript("OnDragStart", function(self)
-        if InCombatLockdown() then
-            -- PrintNotUsableInCombat()
-            return
-        end
+        if InCombatLockdown() then return end
+        if clickAction ~= "move" or not IsControlKeyDown() then return end
         if _G[addon.CONST.DB_NAME].generalSettings.lockPosition then return end
 
         isDragging = true
@@ -308,41 +321,23 @@ function addon.UIFrames.Initialize()
     end)
 
     addon.secureButton:SetScript("OnDragStop", function(self)
-        if InCombatLockdown() then
-            -- PrintNotUsableInCombat()
-            return
-        end
+        if InCombatLockdown() then return end
         addon.mainFrame:StopMovingOrSizing()
-        addon.SaveMainFramePosition()
+        if clickAction == "move" then
+            addon.SaveMainFramePosition()
+        end
     end)
 
     --------------------------------------------------------------------
-    -- PostClick: clear secure attributes after random execution (out of combat)
+    -- PostClick: clear secure attributes after random execution
     --------------------------------------------------------------------
     addon.secureButton:SetScript("PostClick", function(self)
-        if not randomActionTriggered then
+        if not randomActionTriggered then return end
+        if InCombatLockdown() then
+            randomActionTriggered = false
             return
         end
-
-        local actionType = self:GetAttribute("type")
-        local actionID = actionType and self:GetAttribute(actionType)
-
-        if actionType and actionID then
-            if InCombatLockdown() then
-                randomActionTriggered = false
-                return
-            end
-
-            self:SetAttribute("type", nil)
-            self:SetAttribute("toy", nil)
-            self:SetAttribute("spell", nil)
-            self:SetAttribute("item", nil)
-            randomActionTriggered = false
-        else
-            print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " ..
-                addon.CONST.RESET_COLOR .. "PostClick - No valid action found for type:", actionType)
-            randomActionTriggered = false
-        end
+        clearRandomAction(self)
     end)
 
     --------------------------------------------------------------------
