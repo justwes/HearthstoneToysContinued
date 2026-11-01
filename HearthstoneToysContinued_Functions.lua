@@ -4,6 +4,60 @@ local addonName, addon = ...
 -- Ensure the Functions module is part of the addon namespace
 addon.Functions = {}
 
+-- Housing data arrives through PLAYER_HOUSE_LIST_UPDATED.
+addon.housingHomes = {}
+
+local housingEvents = CreateFrame("Frame")
+
+if C_Housing and C_Housing.GetPlayerOwnedHouses then
+    housingEvents:RegisterEvent("PLAYER_LOGIN")
+    housingEvents:RegisterEvent("PLAYER_HOUSE_LIST_UPDATED")
+
+    local function RefreshHousingButtons(self)
+        if not addon.toyFrame then
+            return -- Normal startup will build the buttons later.
+        end
+
+        if InCombatLockdown() then
+            self:RegisterEvent("PLAYER_REGEN_ENABLED")
+            return
+        end
+
+        self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+        addon.InitializeAvailableToys()
+        addon.InitializeIncludedToys()
+        addon.CreateToyButtons()
+    end
+
+    housingEvents:SetScript("OnEvent", function(self, event, houseInfos)
+        if event == "PLAYER_LOGIN" then
+            if C_Housing.HasHousingExpansionAccess() then
+                C_Housing.GetPlayerOwnedHouses()
+            end
+        elseif event == "PLAYER_HOUSE_LIST_UPDATED" then
+            addon.housingHomes = houseInfos or {}
+            RefreshHousingButtons(self)
+        elseif event == "PLAYER_REGEN_ENABLED" then
+            RefreshHousingButtons(self)
+        end
+    end)
+end
+
+function addon.GetHousingHome()
+    return addon.housingHomes[1]
+end
+
+function addon.CanReturnFromHousing()
+    local home = addon.GetHousingHome()
+
+    if not home or not C_HousingNeighborhood then
+        return false
+    end
+
+    return C_HousingNeighborhood.CanReturnAfterVisitingHouse()
+        and C_Housing.GetCurrentNeighborhoodGUID() == home.neighborhoodGUID
+end
+
 -- Store last known toy ownership state
 local lastKnownOwnedToyIDs = {}
 local hasToySnapshotInitialized = false
@@ -51,6 +105,13 @@ function addon.InitializeAvailableToys()
             if C_Item.GetItemCount(itemID) > 0 then
                 table.insert(addon.CONST.availableToys, {id = itemID, type = itemType})
             end
+        elseif itemType == "housing" then
+            if addon.GetHousingHome() then
+                table.insert(
+                    addon.CONST.availableToys,
+                    {id = itemID, type = itemType}
+                )
+            end
         elseif itemType == "spell" then
             if C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false) then
                 table.insert(addon.CONST.availableToys, {id = itemID, type = itemType})
@@ -69,12 +130,15 @@ function addon.InitializeIncludedToys()
             local isToy = false
             local isSpell = false
             local isItem = false
+            local isHousing = false
 
             -- Check each type and their respective functions
             for _, entry in ipairs(addon.toyList) do
                 if entry.id == itemID then
                     if entry.type == "toy" then
                         isToy = PlayerHasToy(itemID)
+                    elseif entry.type == "housing" then
+                        isHousing = addon.GetHousingHome() ~= nil
                     elseif entry.type == "spell" then
                         isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
                     elseif entry.type == "item" then
@@ -84,7 +148,7 @@ function addon.InitializeIncludedToys()
                 end
             end
 
-            if isToy or isSpell or isItem then  -- Include if it's a toy, a spell, or a valid item
+            if isToy or isSpell or isItem or isHousing then  -- Include if it's a toy, a spell, or a valid item
                 table.insert(addon.CONST.includeToys, itemID)
             end
         end
@@ -177,7 +241,8 @@ function addon.CreateToyButtons()
         local isToy = PlayerHasToy(itemID)
         local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
         
-        if isToy or isSpell then
+        if isToy or isSpell
+            or (itemID == 1233637 and addon.GetHousingHome()) then
             local toyActionButton = addon.CreateButton(itemID, addon.toyFrame, index)
             table.insert(addon.CONST.toyButtons, toyActionButton)
             index = index + 1
@@ -412,7 +477,8 @@ function addon.ResetDatabase()
         local itemID = toyListEntry.id
         if type(itemID) == "number" then
             _G[addon.CONST.DB_NAME].toySettings[itemID] = true
-            _G[addon.CONST.DB_NAME].randomToySettings[itemID] = true
+            _G[addon.CONST.DB_NAME].randomToySettings[itemID] =
+                toyListEntry.randomDefault ~= false
         end
     end
 
@@ -513,7 +579,8 @@ function addon.HandleNewToyAcquisition()
             -- Auto-enable newly acquired toys so they appear in the toyFrame
             if isNewlyAcquired then
                 _G[addon.CONST.DB_NAME].toySettings[itemID] = true
-                _G[addon.CONST.DB_NAME].randomToySettings[itemID] = true
+                _G[addon.CONST.DB_NAME].randomToySettings[itemID] =
+                    entry.randomDefault ~= false
                 table.insert(newlyAcquired, {id = itemID, type = "toy"})
             elseif _G[addon.CONST.DB_NAME].toySettings[itemID] == nil then
                 -- First-time DB population for already-owned toys
@@ -675,6 +742,27 @@ end
 
 function addon.UpdateToyButtonCooldown(btn)
     if not btn or not btn.cooldown or not btn._cdType or not btn._cdID then return end
+
+    if btn._cdType == "housing" then
+        if addon.CanReturnFromHousing() then
+            btn.cooldown:Clear()
+            return
+        end
+
+        local info = C_Housing.GetVisitCooldownInfo()
+
+        if info then
+            btn.cooldown:SetCooldown(
+                info.startTime,
+                info.duration,
+                info.modRate
+            )
+        else
+            btn.cooldown:Clear()
+        end
+
+        return
+    end
 
     -- SPELL buttons: just use the spell cooldown
     if btn._cdType == "spell" then

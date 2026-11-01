@@ -705,6 +705,8 @@ function addon.OptionsPanel.Initialize()
             elseif itemType == "item" then
                 local itemName = C_Item.GetItemInfo(itemID)
                 return itemName
+            elseif itemType == "housing" then
+                return "Teleport Home"
             elseif itemType == "spell" then
                 if C_Spell and C_Spell.GetSpellName then
                     return C_Spell.GetSpellName(itemID)
@@ -779,7 +781,8 @@ function addon.OptionsPanel.Initialize()
 
                 if db.randomToySettings[itemID] == nil then
                     db.randomToySettings[itemID] =
-                        db.toySettings[itemID] == true
+                        entry.randomDefault ~= false
+                        and db.toySettings[itemID] == true
                 end
 
                 local randomCB = CreateFrame(
@@ -884,14 +887,41 @@ function addon.OptionsPanel.Initialize()
         })
         updatesBox:SetBackdropColor(0, 0, 0, 0.35)
 
-        local updatesText = updatesBox:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        updatesText:SetPoint("TOPLEFT", updatesBox, "TOPLEFT", 10, -10)
-        updatesText:SetPoint("TOPRIGHT", updatesBox, "TOPRIGHT", -10, -10)
+        local updatesScroll = CreateFrame(
+            "ScrollFrame", nil, updatesBox, "UIPanelScrollFrameTemplate"
+        )
+        updatesScroll:SetPoint("TOPLEFT", updatesBox, "TOPLEFT", 10, -10)
+        updatesScroll:SetPoint("BOTTOMRIGHT", updatesBox, "BOTTOMRIGHT", -30, 10)
+
+        local updatesContent = CreateFrame("Frame", nil, updatesScroll)
+        updatesContent:SetSize(updatesBox:GetWidth() - 40, 1)
+        updatesScroll:SetScrollChild(updatesContent)
+
+        local updatesText = updatesContent:CreateFontString(
+            nil, "OVERLAY", "GameFontHighlightSmall"
+        )
+        updatesText:SetPoint("TOPLEFT", updatesContent, "TOPLEFT", 0, 0)
+        updatesText:SetWidth(updatesContent:GetWidth())
         updatesText:SetJustifyH("LEFT")
         updatesText:SetJustifyV("TOP")
+        updatesText:SetWordWrap(true)
 
         local updates = addon.CONST.ADDON_UPDATES
-        updatesText:SetText((updates and updates ~= "") and updates or "No recent updates listed.")
+        updatesText:SetText(
+            (updates and updates ~= "")
+                and updates
+                or "No recent updates listed."
+        )
+
+        local function UpdateChangesHeight()
+            updatesContent:SetHeight(math.max(
+                updatesText:GetStringHeight() + 8,
+                updatesScroll:GetHeight()
+            ))
+        end
+
+        updatesScroll:HookScript("OnShow", UpdateChangesHeight)
+        UpdateChangesHeight()
     end
 
     ------------------------------------------------

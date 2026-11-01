@@ -1,5 +1,41 @@
 # Changelog
 
+## [1.2.1] - 2026-11-01
+
+### Added
+
+- Hiveborne Hearthstone, Shadeweaver's Hearthstone, and Personal Key to the Arcantina.
+- Class travel spells: Teleport: Moonglade, Dreamwalk, Death Gate, Zen Pilgrimage, and Teleport: Hall of the Guardian.
+- Housing teleport and return travel, with matching icons, tooltips, and cooldown displays.
+- Optional housing participation in random selection.
+- Commented-out Wood-Cursed Hearthstone entry for future 12.1.7 support.
+
+### Changed
+
+- New class travel and housing entries default to exclusion from random selection.
+- Defaults and new-entry initialization respect individual random-selection defaults.
+- Latest Changes now scrolls within the About page.
+- Updated launch notice and retained the 1.2.0 information.
+- Corrected the packager's GitHub token variable for automatic GitHub Release publication.
+
+### Testing
+
+Verified in-game:
+
+- Teleport: Moonglade and Death Gate.
+- New class spell entries initially excluded from random selection.
+- Housing teleport and return through manual and random use.
+- Housing icons, tooltips, and cooldown displays.
+- Scrolling Latest Changes text.
+
+Dreamwalk, Zen Pilgrimage, Hall of the Guardian, and the newly listed toys have not been individually verified in-game.
+Automatic GitHub Release publication awaits verification with this release.
+
+### Deferred
+
+- Mage city teleports and portals require a future layout update.
+- Wood-Cursed Hearthstone remains disabled pending its live release.
+
 ## [1.2.0] - 2026-11-01
 
 ### Added

@@ -27,8 +27,13 @@ addon.CONST = {
     xPositionInput, yPositionInput,
     UpdateCooldown,
     optionsCategoryId,
-        ADDON_VERSION = "1.2.0", -- Update this with each release
-        ADDON_UPDATES = "Version 1.2.0\n\n" ..
+        ADDON_VERSION = "1.2.1", -- Update this with each release
+        ADDON_UPDATES = "Version 1.2.1\n\n" ..
+            "NEW: Hiveborne Hearthstone, Shadeweaver's Hearthstone, and Personal Key to the Arcantina.\n\n" ..
+            "NEW: Teleport: Moonglade, Dreamwalk, Death Gate, Zen Pilgrimage, and Teleport: Hall of the Guardian.\n\n" ..
+            "NEW: Housing teleport and return travel, with matching icons, tooltips, and cooldowns.\n\n" ..
+            "New class travel and housing entries start excluded from random selection. Defaults respects these exclusions.\n\n" ..
+            "Version 1.2.0\n\n" ..
             "NEW: Choose separately which Hearthstones appear in the list and which are used randomly.\n\n" ..
             "NEW: Clear column headings for Hearthstone, Show in list, and Random.\n\n" ..
             "Keep Dalaran and Garrison available for manual use without including them in random selection.\n\n" ..
@@ -91,11 +96,22 @@ addon.toyList = {
     {id = 263933, type = "toy"}, -- Preyseeker’s Hearthstone
     {id = 263489, type = "toy"}, -- Naaru's Enfold
     {id = 264367, type = "toy"}, -- Mycomancer's Hearthspore
+    {id = 281136, type = "toy"}, -- Hiveborne Hearthstone
+    {id = 281615, type = "toy"}, -- Shadeweaver's Hearthstone
+    {id = 253629, type = "toy"}, -- Personal Key to the Arcantina
     {id = 6948, type = "item"}, -- Default Hearthstone
     {id = 37118, type = "item"}, -- Scroll of Recall
     {id = 44314, type = "item"}, -- Scroll of Recall II
     {id = 44315, type = "item"}, -- Scroll of Recall III
+    -- Enable when patch 12.1.7 goes live:
+    -- {id = 288912, type = "toy"}, -- Wood-Cursed Hearthstone
     {id = 556, type = "spell"}, -- Astral Recall
+    {id = 18960, type = "spell", randomDefault = false}, -- Teleport: Moonglade (Druid)
+    {id = 193753, type = "spell", randomDefault = false}, -- Dreamwalk (Druid)
+    {id = 50977, type = "spell", randomDefault = false}, -- Death Gate (Death Knight)
+    {id = 126892, type = "spell", randomDefault = false}, -- Zen Pilgrimage (Monk)
+    {id = 193759, type = "spell", randomDefault = false}, -- Teleport: Hall of the Guardian (Mage)
+    {id = 1233637, type = "housing", randomDefault = false}, -- Teleport Home
 }
 
 --------------------
@@ -176,17 +192,22 @@ addon.defaults = {
 -- Feature-specific notice ID. This is intentionally independent of the addon version.
 -- Keep the acknowledgement outside addon.defaults so restoring preferences
 -- does not cause an already acknowledged notice to appear again.
-local CLICK_CONTROLS_NOTICE_ID = "separate-selections-v1"
+local CLICK_CONTROLS_NOTICE_ID = "travel-options-v1"
 local CLICK_CONTROLS_POPUP_KEY = "HEARTHSTONETOYSCONTINUED_CLICK_CONTROLS_NOTICE"
 
 StaticPopupDialogs[CLICK_CONTROLS_POPUP_KEY] = {
     text = "|cFF00a7ffHearthstone Toys Continued|r\n\n" ..
-        "What's New in 1.2.0\n\n" ..
-        "|cFFFFD100Separate list and random selections|r\n" ..
+        "What's New in 1.2.1\n\n" ..
+        "|cFFFFD100More travel options|r\n" ..
+        "Added Hiveborne Hearthstone, Shadeweaver's Hearthstone, " ..
+        "and Personal Key to the Arcantina.\n\n" ..
+        "Added class travel spells and housing teleport with return travel. " ..
+        "New class travel and housing entries start excluded from random selection.\n\n" ..
+        "|cFFFFD100Also included from 1.2.0|r\n" ..
         "Choose which Hearthstones appear in your list and which can be used randomly.\n\n" ..
         "Keep Dalaran and Garrison available for manual use without including them in random selection.\n\n" ..
         "|cFFFFD100Your existing choices are preserved|r\n" ..
-        "Both columns initially match your previous selections. " ..
+        "Both columns initially match your previous selections when upgrading from before 1.2.0. " ..
         "Change them independently under Included Toys.\n\n" ..
         "Right-click the addon button or type /hstc to open settings.",
     button1 = "Got it!",
@@ -238,9 +259,13 @@ function addon.InitializeAddon()
     local db = _G[addon.CONST.DB_NAME]
     db.randomToySettings = db.randomToySettings or {}
 
-    for itemID, isIncluded in pairs(db.toySettings) do
+    for _, entry in ipairs(addon.toyList) do
+        local itemID = entry.id
+
         if db.randomToySettings[itemID] == nil then
-            db.randomToySettings[itemID] = isIncluded == true
+            db.randomToySettings[itemID] =
+                entry.randomDefault ~= false
+                and db.toySettings[itemID] == true
         end
     end
 

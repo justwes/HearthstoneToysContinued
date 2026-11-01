@@ -2,7 +2,7 @@
 
 An independent fork of **Hearthstone Toys 1.12.9**, originally created by **Gerlock (Gerlock-ArgentDawn US)** for World of Warcraft Retail. Fork maintenance and compatibility fixes are by **Wes**.
 
-**Current version: `1.2.0`.** Independent list visibility and random selection, with an improved Included Toys layout.
+**Current version: `1.2.1`.** Additional hearthstone toys, class travel spells, and housing teleport with return travel. Includes independent list visibility and random selection from 1.2.0.
 
 Original project: https://www.curseforge.com/wow/addons/hearthstone-toys
 
@@ -23,7 +23,7 @@ Report fork bugs and feature requests at: https://github.com/justwes/Hearthstone
 | Internal addon name and frame-name prefix | `HearthstoneToysContinued`       |
 | Saved variables                           | `HearthstoneToysContinuedDB`     |
 | Options command                           | `/hstc`                          |
-| Current version                           | `1.1.0`                          |
+| Current version                           | `1.2.1`                          |
 | Upstream source baseline                  | Hearthstone Toys `1.12.9`        |
 
 The fork uses separate settings, frame names, commands and reset-popup identifiers. It does not read or migrate `HearthstoneToysDB`, claim `/hst`, or overwrite the original addon's folder. Existing positions and selections from the original are not automatically imported. Both addons can remain installed; simultaneous operation still needs an in-game coexistence test.
@@ -38,10 +38,15 @@ The original project's maintenance status has not been confirmed with its author
 - **Right-click** the main button, or enter `/hstc`, to open the options.
 - **Reverse click actions** in General Settings to make Left-click use a random hearthstone and Shift + Left-click open the list. The original controls remain the default.
 - **Lock Dragging** in Positioning settings to prevent moving the button.
+- Includes Hiveborne Hearthstone, Shadeweaver's Hearthstone, and Personal Key to the Arcantina.
+- Supports learned class travel spells: Teleport: Moonglade, Dreamwalk, Death Gate, Zen Pilgrimage, and Teleport: Hall of the Guardian.
+- Teleport Home targets the first owned home returned by the housing API and supports returning to your departure point when available.
+- New class travel and housing entries are excluded from random selection by default; players can opt in.
+- Scroll through current and previous release notes on the About page.
 - Click an entry in the list to use it when available.
 - Choose independently whether each entry appears in the list and is included in random selection.
 - Keep Dalaran and Garrison available for manual use while excluding them from random selection.
-- Existing selections populate both choices on upgrade. Defaults and newly acquired toys enable both choices.
+- Existing selections populate both choices when upgrading from before 1.2.0. Defaults and newly acquired toys respect each entry's random-selection default.
 - Configure button size, position, mouseover visibility and position presets.
 - View cooldown overlays on the main button and individual entries.
 - A one-time **What's New** popup explains the updated controls when first loading this feature release.

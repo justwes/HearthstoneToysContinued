@@ -196,6 +196,8 @@ function addon.UIFrames.Initialize()
                     isOwned = PlayerHasToy(entry.id)
                 elseif entry.type == "item" then
                     isOwned = C_Item.GetItemCount(entry.id) > 0
+                elseif entry.type == "housing" then
+                    isOwned = addon.GetHousingHome() ~= nil
                 elseif entry.type == "spell" then
                     isOwned = C_SpellBook.IsSpellInSpellBook(
                         entry.id,
@@ -243,6 +245,9 @@ function addon.UIFrames.Initialize()
         self:SetAttribute("toy", nil)
         self:SetAttribute("spell", nil)
         self:SetAttribute("item", nil)
+        self:SetAttribute("house-neighborhood-guid", nil)
+        self:SetAttribute("house-guid", nil)
+        self:SetAttribute("house-plot-id", nil)
         randomActionTriggered = false
     end
 
@@ -272,9 +277,28 @@ function addon.UIFrames.Initialize()
             if clickAction == "random" then
                 local actionType, actionID = selectRandomAction()
                 if actionType and actionID then
-                    self:SetAttribute("type", actionType)
-                    self:SetAttribute(actionType, actionID)
-                    randomActionTriggered = true
+                    if actionType == "housing" then
+                        local home = addon.GetHousingHome()
+
+                        if home then
+                            local action = addon.CanReturnFromHousing()
+                                and "returnhome"
+                                or "teleporthome"
+
+                            self:SetAttribute("type", action)
+                            self:SetAttribute(
+                                "house-neighborhood-guid",
+                                home.neighborhoodGUID
+                            )
+                            self:SetAttribute("house-guid", home.houseGUID)
+                            self:SetAttribute("house-plot-id", home.plotID)
+                            randomActionTriggered = true
+                        end
+                    else
+                        self:SetAttribute("type", actionType)
+                        self:SetAttribute(actionType, actionID)
+                        randomActionTriggered = true
+                    end
                 else
                     print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " ..
                         addon.CONST.RESET_COLOR .. "No valid action found.")
@@ -480,7 +504,60 @@ function addon.CreateButton(itemID, parent, index)
     local tooltipFunc
 
     -- Preload texture and setup tooltip function
-    if isToy then
+    if itemID == 1233637 and addon.GetHousingHome() then
+        local home = addon.GetHousingHome()
+
+        texture = C_Spell.GetSpellTexture(itemID)
+            or addon.CONST.ADDON_ICON_TEXTURE
+
+        tooltipFunc = function(self)
+            local returning = addon.CanReturnFromHousing()
+
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+            GameTooltip:SetText(
+                returning and "Return from Housing" or "Teleport Home"
+            )
+            GameTooltip:AddLine(
+                returning and "Return to your departure point."
+                    or home.houseName or "Your home",
+                1, 1, 1
+            )
+            GameTooltip:Show()
+        end
+
+        local function UpdateHousingAction(self)
+            if InCombatLockdown() then
+                return
+            end
+
+            local action = addon.CanReturnFromHousing()
+                and "returnhome"
+                or "teleporthome"
+
+            self:SetAttribute("type", action)
+            self:SetNormalAtlas(
+                action == "returnhome"
+                    and "dashboard-panel-homestone-teleport-out-button"
+                    or "dashboard-panel-homestone-teleport-button"
+            )
+
+            if addon.UpdateToyButtonCooldown then
+                addon.UpdateToyButtonCooldown(self)
+            end
+        end
+
+        toyActionButton:SetScript("OnShow", UpdateHousingAction)
+        toyActionButton:SetScript("PreClick", UpdateHousingAction)
+        UpdateHousingAction(toyActionButton)
+        toyActionButton:SetAttribute("house-neighborhood-guid", home.neighborhoodGUID)
+        toyActionButton:SetAttribute("house-guid", home.houseGUID)
+        toyActionButton:SetAttribute("house-plot-id", home.plotID)
+        toyActionButton:SetAttribute("useOnKeyDown", true)
+
+        toyActionButton._cdType = "housing"
+        toyActionButton._cdID = itemID
+
+    elseif isToy then
         local _, toyName, toyTexture = C_ToyBox.GetToyInfo(itemID)
         texture = toyTexture
         tooltipFunc = function(self)
@@ -535,7 +612,9 @@ function addon.CreateButton(itemID, parent, index)
     end
 
     -- Use the SetButtonTexture function with retry logic
-    SetButtonTexture(toyActionButton, itemID, texture, 7)
+    if toyActionButton._cdType ~= "housing" then
+        SetButtonTexture(toyActionButton, itemID, texture, 7)
+    end
 
     -- Tooltip handling with caching check
     toyActionButton:SetScript("OnEnter", function(self)
