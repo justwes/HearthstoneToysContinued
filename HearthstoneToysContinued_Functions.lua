@@ -407,10 +407,12 @@ function addon.ResetDatabase()
 
     -- Reset toySettings
     _G[addon.CONST.DB_NAME].toySettings = {}
+    _G[addon.CONST.DB_NAME].randomToySettings = {}
     for _, toyListEntry in ipairs(addon.toyList) do
         local itemID = toyListEntry.id
         if type(itemID) == "number" then
             _G[addon.CONST.DB_NAME].toySettings[itemID] = true
+            _G[addon.CONST.DB_NAME].randomToySettings[itemID] = true
         end
     end
 
@@ -511,6 +513,7 @@ function addon.HandleNewToyAcquisition()
             -- Auto-enable newly acquired toys so they appear in the toyFrame
             if isNewlyAcquired then
                 _G[addon.CONST.DB_NAME].toySettings[itemID] = true
+                _G[addon.CONST.DB_NAME].randomToySettings[itemID] = true
                 table.insert(newlyAcquired, {id = itemID, type = "toy"})
             elseif _G[addon.CONST.DB_NAME].toySettings[itemID] == nil then
                 -- First-time DB population for already-owned toys

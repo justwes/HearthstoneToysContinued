@@ -663,7 +663,7 @@ function addon.OptionsPanel.Initialize()
     ------------------------------------------------
     do
         local toysScroll = CreateFrame("ScrollFrame", nil, pageToys, "UIPanelScrollFrameTemplate")
-        toysScroll:SetPoint("TOPLEFT", toysTitle, "BOTTOMLEFT", 0, -24)
+        toysScroll:SetPoint("TOPLEFT", toysTitle, "BOTTOMLEFT", 0, -54)
         toysScroll:SetPoint("BOTTOMRIGHT", pageToys, "BOTTOMRIGHT", -30, 0)
 
         local toysContent = CreateFrame("Frame", nil, toysScroll)
@@ -672,7 +672,23 @@ function addon.OptionsPanel.Initialize()
 
         local toyListHelp = pageToys:CreateFontString(nil, "OVERLAY", "GameFontNormal")
         toyListHelp:SetPoint("TOPLEFT", toysTitle, "BOTTOMLEFT", 0, -12)
-        toyListHelp:SetText("Select which " .. addon.CONST.ADDON_DISPLAY_NAME .. " toys are included.")
+        toyListHelp:SetText("Choose list visibility and random selection separately.")
+
+        local function AddColumnHeader(text, x, width)
+            local label = pageToys:CreateFontString(
+                nil, "OVERLAY", "GameFontNormal"
+            )
+            label:SetPoint("TOPLEFT", toysTitle, "BOTTOMLEFT", x, -34)
+            label:SetWidth(width)
+            label:SetJustifyH("CENTER")
+            label:SetText(text)
+            return label
+        end
+
+        local nameHeader = AddColumnHeader("Hearthstone", 8, 240)
+        nameHeader:SetJustifyH("LEFT")
+        AddColumnHeader("Show in list", 235, 76)
+        AddColumnHeader("Random", 335, 56)
 
         -- checkbox cache
         local toyCheckBoxes = {}
@@ -738,10 +754,15 @@ function addon.OptionsPanel.Initialize()
                 local itemType = entry.type
 
                 local cb = CreateFrame("CheckButton", nil, toysContent, "InterfaceOptionsCheckButtonTemplate")
-                cb:SetPoint("TOPLEFT", toysContent, "TOPLEFT", 8, y)
+                cb:SetPoint("TOPLEFT", toysContent, "TOPLEFT", 260, y)
                 cb.Text:SetText("Loading...")
                 cb.Text:ClearAllPoints()
-                cb.Text:SetPoint("LEFT", cb, "RIGHT", 5, 0)
+                cb.Text:SetPoint(
+                    "TOPLEFT", toysContent, "TOPLEFT", 8, y - 8
+                )
+                cb.Text:SetWidth(240)
+                cb.Text:SetJustifyH("LEFT")
+                cb.Text:SetWordWrap(false)
 
                 cb:SetChecked(db.toySettings[itemID] == true)
                 cb:SetScript("OnClick", function(self)
@@ -755,6 +776,27 @@ function addon.OptionsPanel.Initialize()
                         if addon.UpdateToyButtonPositions then addon.UpdateToyButtonPositions() end
                     end
                 end)
+
+                if db.randomToySettings[itemID] == nil then
+                    db.randomToySettings[itemID] =
+                        db.toySettings[itemID] == true
+                end
+
+                local randomCB = CreateFrame(
+                    "CheckButton",
+                    nil,
+                    toysContent,
+                    "InterfaceOptionsCheckButtonTemplate"
+                )
+                randomCB:SetPoint("TOPLEFT", toysContent, "TOPLEFT", 350, y)
+                randomCB.Text:SetText("")
+                randomCB:SetChecked(db.randomToySettings[itemID] == true)
+
+                randomCB:SetScript("OnClick", function(self)
+                    db.randomToySettings[itemID] = self:GetChecked() == true
+                end)
+
+                table.insert(toyCheckBoxes, randomCB)
 
                 -- Name resolution with a couple retries (matches your original idea)
                 local function UpdateName(attemptsLeft)

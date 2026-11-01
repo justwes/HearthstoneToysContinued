@@ -27,13 +27,12 @@ addon.CONST = {
     xPositionInput, yPositionInput,
     UpdateCooldown,
     optionsCategoryId,
-        ADDON_VERSION = "1.1.0", -- Update this with each release
-        ADDON_UPDATES = "Version 1.1.0\n\n" ..
-            "NEW: Reverse left-click and Shift-click actions in General Settings.\n\n" ..
-            "NEW: Hold Ctrl + Left-click and drag to reposition the button.\n\n" ..
-            "NEW: Updated tooltips and a one-time What's New announcement.\n\n" ..
-            "These improvements were inspired by a user feature request.\n" ..
-            "Have an idea? Feature requests and suggestions are always welcome!",
+        ADDON_VERSION = "1.2.0", -- Update this with each release
+        ADDON_UPDATES = "Version 1.2.0\n\n" ..
+            "NEW: Choose separately which Hearthstones appear in the list and which are used randomly.\n\n" ..
+            "NEW: Clear column headings for Hearthstone, Show in list, and Random.\n\n" ..
+            "Keep Dalaran and Garrison available for manual use without including them in random selection.\n\n" ..
+            "Existing selections are preserved when upgrading. Defaults and newly acquired toys enable both selections.",
     WELCOME_MESSAGE = "Type '/hstc' for options. Development maintained by Wes, based on Gerlock's Hearthstone Toys. See the fork README for project and support details.",
 }
 
@@ -177,21 +176,19 @@ addon.defaults = {
 -- Feature-specific notice ID. This is intentionally independent of the addon version.
 -- Keep the acknowledgement outside addon.defaults so restoring preferences
 -- does not cause an already acknowledged notice to appear again.
-local CLICK_CONTROLS_NOTICE_ID = "click-controls-v1"
+local CLICK_CONTROLS_NOTICE_ID = "separate-selections-v1"
 local CLICK_CONTROLS_POPUP_KEY = "HEARTHSTONETOYSCONTINUED_CLICK_CONTROLS_NOTICE"
 
 StaticPopupDialogs[CLICK_CONTROLS_POPUP_KEY] = {
     text = "|cFF00a7ffHearthstone Toys Continued|r\n\n" ..
-        "What's New: Button Controls\n\n" ..
-        "|cFFFFD100Moving the button has changed!|r\n" ..
-        "Hold Ctrl + Left-click and drag to reposition the button. " ..
-        "Regular dragging no longer moves it.\n\n" ..
-        "|cFFFFD100Customise your clicks|r\n" ..
-        "The original controls are still the default:\n" ..
-        "Left-click: Open the toy list\n" ..
-        "Shift + Left-click: Use a random Hearthstone\n\n" ..
-        "You can reverse these actions in the addon's General settings. " ..
-        "Right-click still opens settings, and Lock Position still prevents dragging.",
+        "What's New in 1.2.0\n\n" ..
+        "|cFFFFD100Separate list and random selections|r\n" ..
+        "Choose which Hearthstones appear in your list and which can be used randomly.\n\n" ..
+        "Keep Dalaran and Garrison available for manual use without including them in random selection.\n\n" ..
+        "|cFFFFD100Your existing choices are preserved|r\n" ..
+        "Both columns initially match your previous selections. " ..
+        "Change them independently under Included Toys.\n\n" ..
+        "Right-click the addon button or type /hstc to open settings.",
     button1 = "Got it!",
     OnAccept = function()
         _G[addon.CONST.DB_NAME].lastSeenFeatureNotice = CLICK_CONTROLS_NOTICE_ID
@@ -234,6 +231,16 @@ function addon.InitializeAddon()
         if type(itemID) == "number" and _G[addon.CONST.DB_NAME].toySettings[itemID] == nil then
             -- Default to true only if the player owns the toy
             _G[addon.CONST.DB_NAME].toySettings[itemID] = PlayerHasToy(itemID)
+        end
+    end
+
+    -- Copy existing selections into independent random settings once.
+    local db = _G[addon.CONST.DB_NAME]
+    db.randomToySettings = db.randomToySettings or {}
+
+    for itemID, isIncluded in pairs(db.toySettings) do
+        if db.randomToySettings[itemID] == nil then
+            db.randomToySettings[itemID] = isIncluded == true
         end
     end
 

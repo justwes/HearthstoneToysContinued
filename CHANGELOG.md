@@ -1,6 +1,33 @@
 # Changelog
 
-No unreleased changes.
+## [1.2.0] - 2026-11-01
+
+### Added
+
+- Independent Show in list and Random selections for each available entry.
+- Column headings separating hearthstone names, list visibility and random selection.
+- Entries can remain available for manual use while excluded from random selection, or vice versa.
+
+### Changed
+
+- Existing selections populate both settings on upgrade.
+- Random selection checks current ownership before choosing an entry.
+- Defaults resets both selections.
+- Newly acquired toys are automatically enabled for both selections.
+
+### Testing
+
+Verified in-game:
+
+- Updated 1.2.0 launch notice appears once and stays dismissed after acknowledgement and reload.
+- Independent list visibility and random selection.
+- Manual use of entries excluded from random selection.
+- Empty random selection.
+- Settings persist after reload.
+- Both click-control modes.
+- Defaults resets both columns and persists after reload.
+
+New-toy acquisition handling was reviewed but not tested with a live acquisition as I had no new toys.
 
 ## [1.1.0] - 2026-10-25
 

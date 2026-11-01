@@ -185,29 +185,42 @@ function addon.UIFrames.Initialize()
     -- Random action picker
     --------------------------------------------------------------------
     local function selectRandomAction()
-        local actionList = addon.CONST.includeToys
+        local db = _G[addon.CONST.DB_NAME]
+        local actionList = {}
+
+        for _, entry in ipairs(addon.toyList) do
+            if db.randomToySettings[entry.id] then
+                local isOwned = false
+
+                if entry.type == "toy" then
+                    isOwned = PlayerHasToy(entry.id)
+                elseif entry.type == "item" then
+                    isOwned = C_Item.GetItemCount(entry.id) > 0
+                elseif entry.type == "spell" then
+                    isOwned = C_SpellBook.IsSpellInSpellBook(
+                        entry.id,
+                        Enum.SpellBookSpellBank.Player,
+                        false
+                    )
+                end
+
+                if isOwned then
+                    table.insert(actionList, entry)
+                end
+            end
+        end
 
         if #actionList == 0 then
-            print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Action list is empty.")
             return nil, nil
         end
 
-        local randomIndex = math.random(1, #actionList)
-        local itemID = actionList[randomIndex]
+        local entry = actionList[math.random(1, #actionList)]
 
-        local isToy = PlayerHasToy(itemID)
-        local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
-        local itemCount = C_Item.GetItemCount(itemID)
-
-        if isToy then
-            return "toy", itemID
-        elseif isSpell then
-            return "spell", itemID
-        elseif itemCount > 0 then
-            return "item", "item:" .. itemID
-        else
-            return nil, nil
+        if entry.type == "item" then
+            return "item", "item:" .. entry.id
         end
+
+        return entry.type, entry.id
     end
 
     -- Ctrl always takes priority. Otherwise the setting determines
