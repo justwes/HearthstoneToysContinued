@@ -189,26 +189,9 @@ function addon.UIFrames.Initialize()
         local actionList = {}
 
         for _, entry in ipairs(addon.toyList) do
-            if db.randomToySettings[entry.id] then
-                local isOwned = false
-
-                if entry.type == "toy" then
-                    isOwned = PlayerHasToy(entry.id)
-                elseif entry.type == "item" then
-                    isOwned = C_Item.GetItemCount(entry.id) > 0
-                elseif entry.type == "housing" then
-                    isOwned = addon.GetHousingHome() ~= nil
-                elseif entry.type == "spell" then
-                    isOwned = C_SpellBook.IsSpellInSpellBook(
-                        entry.id,
-                        Enum.SpellBookSpellBank.Player,
-                        false
-                    )
-                end
-
-                if isOwned then
-                    table.insert(actionList, entry)
-                end
+            if db.randomToySettings[entry.id]
+                and addon.IsEntryAvailable(entry.id, entry.type) then
+                table.insert(actionList, entry)
             end
         end
 

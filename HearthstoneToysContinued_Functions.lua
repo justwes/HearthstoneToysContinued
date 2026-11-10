@@ -89,67 +89,60 @@ function addon.TestMarkOwnedToy(itemID)
     hasToySnapshotInitialized = true
 end
 
+-- Check whether a toy, item, spell, or housing action is available
+function addon.IsEntryAvailable(itemID, itemType)
+    if itemType == "toy" then
+        return PlayerHasToy(itemID)
+    elseif itemType == "item" then
+        return C_Item.GetItemCount(itemID) > 0
+    elseif itemType == "spell" then
+        return C_SpellBook.IsSpellInSpellBook(
+            itemID, Enum.SpellBookSpellBank.Player, false
+        )
+    elseif itemType == "housing" then
+        return addon.GetHousingHome() ~= nil
+    end
+
+    return false
+end
+
 -- Function to find Available Toys by filtering toyList
 function addon.InitializeAvailableToys()
-    wipe(addon.CONST.availableToys) -- Clear the availableToys table
-    
+    wipe(addon.CONST.availableToys)
+
     for _, entry in ipairs(addon.toyList) do
-        local itemID = entry.id
-        local itemType = entry.type
-        
-        if itemType == "toy" then
-            if PlayerHasToy(itemID) then
-                table.insert(addon.CONST.availableToys, {id = itemID, type = itemType})
-            end
-        elseif itemType == "item" then
-            if C_Item.GetItemCount(itemID) > 0 then
-                table.insert(addon.CONST.availableToys, {id = itemID, type = itemType})
-            end
-        elseif itemType == "housing" then
-            if addon.GetHousingHome() then
-                table.insert(
-                    addon.CONST.availableToys,
-                    {id = itemID, type = itemType}
-                )
-            end
-        elseif itemType == "spell" then
-            if C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false) then
-                table.insert(addon.CONST.availableToys, {id = itemID, type = itemType})
-            end
+        if addon.IsEntryAvailable(entry.id, entry.type) then
+            table.insert(addon.CONST.availableToys, {
+                id = entry.id,
+                type = entry.type
+            })
         end
     end
 end
 
--- Function to find Included Toys by filtering availableToys based on checkboxes in options panel
+-- Build the included list from saved settings and entry availability
 function addon.InitializeIncludedToys()
-    wipe(addon.CONST.includeToys) -- Clear the includeToys table
-    
-    -- Add toys, items, and spells from the saved settings to the includeToys table
+    wipe(addon.CONST.includeToys)
+
     for itemID, isIncluded in pairs(_G[addon.CONST.DB_NAME].toySettings) do
         if isIncluded then
-            local isToy = false
-            local isSpell = false
-            local isItem = false
-            local isHousing = false
-
-            -- Check each type and their respective functions
             for _, entry in ipairs(addon.toyList) do
                 if entry.id == itemID then
-                    if entry.type == "toy" then
-                        isToy = PlayerHasToy(itemID)
-                    elseif entry.type == "housing" then
-                        isHousing = addon.GetHousingHome() ~= nil
-                    elseif entry.type == "spell" then
-                        isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
-                    elseif entry.type == "item" then
-                        isItem = C_Item.GetItemInfo(itemID) ~= nil
+                    local isAvailable
+
+                    if entry.type == "item" then
+                        -- Preserve the existing item-information check
+                        isAvailable = C_Item.GetItemInfo(itemID) ~= nil
+                    else
+                        isAvailable = addon.IsEntryAvailable(itemID, entry.type)
                     end
+
+                    if isAvailable then
+                        table.insert(addon.CONST.includeToys, itemID)
+                    end
+
                     break
                 end
-            end
-
-            if isToy or isSpell or isItem or isHousing then  -- Include if it's a toy, a spell, or a valid item
-                table.insert(addon.CONST.includeToys, itemID)
             end
         end
     end
@@ -235,25 +228,22 @@ function addon.CreateToyButtons()
         end
     end
 
+    -- Map each entry ID to its type for availability checks
+    local entryTypes = {}
+
+    for _, entry in ipairs(addon.toyList) do
+        entryTypes[entry.id] = entry.type
+    end
+
     local index = 1
 
     for _, itemID in ipairs(addon.CONST.includeToys) do
-        local isToy = PlayerHasToy(itemID)
-        local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
-        
-        if isToy or isSpell
-            or (itemID == 1233637 and addon.GetHousingHome()) then
+        local itemType = entryTypes[itemID]
+
+        if itemType and addon.IsEntryAvailable(itemID, itemType) then
             local toyActionButton = addon.CreateButton(itemID, addon.toyFrame, index)
             table.insert(addon.CONST.toyButtons, toyActionButton)
             index = index + 1
-        else
-            -- Handle non-toy items (e.g., items in the player's bags)
-            local itemCount = C_Item.GetItemCount(itemID)
-            if itemCount > 0 then
-                local toyActionButton = addon.CreateButton(itemID, addon.toyFrame, index)
-                table.insert(addon.CONST.toyButtons, toyActionButton)
-                index = index + 1
-            end
         end
     end
     addon.UpdateToyButtonPositions() -- Update button positions after creating them

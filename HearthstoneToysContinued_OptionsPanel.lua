@@ -714,16 +714,13 @@ function addon.OptionsPanel.Initialize()
         local function EnsureToyDefaults(db)
             for _, entry in ipairs(addon.toyList or {}) do
                 local itemID = entry.id
+
                 if type(itemID) == "number" and db.toySettings[itemID] == nil then
-                    -- same behavior as your main init: true if owned (for toys), else false
-                    if entry.type == "toy" then
-                        db.toySettings[itemID] = PlayerHasToy(itemID)
-                    elseif entry.type == "item" then
-                        db.toySettings[itemID] = (C_Item.GetItemCount(itemID) or 0) > 0
-                    elseif entry.type == "spell" then
-                        db.toySettings[itemID] = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
-                    else
+                    if entry.type == "housing" then
+                        -- Housing remains disabled by default
                         db.toySettings[itemID] = false
+                    else
+                        db.toySettings[itemID] = addon.IsEntryAvailable(itemID, entry.type)
                     end
                 end
             end
