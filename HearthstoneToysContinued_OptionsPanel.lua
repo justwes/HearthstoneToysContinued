@@ -200,79 +200,79 @@ function addon.OptionsPanel.Initialize()
         return n
     end
 
+
+    local function CreateSettingCheckbox(parent, anchor, point, x, y,
+                                         labelText, settings, key, onChange)
+        local checkbox = CreateFrame("CheckButton", nil, parent, "ChatConfigCheckButtonTemplate")
+        checkbox:SetPoint("TOPLEFT", anchor, point, x, y)
+        checkbox:SetChecked(settings[key])
+
+        checkbox:SetScript("OnClick", function(self)
+            settings[key] = self:GetChecked()
+            if onChange then
+                onChange(self:GetChecked())
+            end
+        end)
+
+        local label = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
+        label:SetText(labelText)
+
+        return checkbox
+    end
+
+
     ------------------------------------------------
     -- GENERAL PAGE
     ------------------------------------------------
     do
         local db = SafeGetDB()
 
+
         -- Welcome message
-        local showWelcomeMessageCheckbox = CreateFrame("CheckButton", nil, pageGeneral, "ChatConfigCheckButtonTemplate")
-        showWelcomeMessageCheckbox:SetPoint("TOPLEFT", generalTitle, "BOTTOMLEFT", 20, -12)
-        showWelcomeMessageCheckbox:SetChecked(db.generalSettings.showWelcomeMessage)
-        showWelcomeMessageCheckbox:SetScript("OnClick", function(self)
-            db.generalSettings.showWelcomeMessage = self:GetChecked()
-        end)
+        local showWelcomeMessageCheckbox = CreateSettingCheckbox(
+            pageGeneral, generalTitle, "BOTTOMLEFT", 20, -12,
+            "Show Welcome Message", db.generalSettings, "showWelcomeMessage"
+        )
         addon.generalSettingsCheckbox = showWelcomeMessageCheckbox
 
-        local showWelcomeMessageLabel = pageGeneral:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        showWelcomeMessageLabel:SetPoint("LEFT", showWelcomeMessageCheckbox, "RIGHT", 5, 0)
-        showWelcomeMessageLabel:SetText("Show Welcome Message")
 
         -- Flavor message toggle
-        local showChatMessageCheckbox = CreateFrame("CheckButton", nil, pageGeneral, "ChatConfigCheckButtonTemplate")
-        showChatMessageCheckbox:SetPoint("TOPLEFT", showWelcomeMessageCheckbox, "BOTTOMLEFT", 0, -8)
-        showChatMessageCheckbox:SetChecked(db.specificSettings.showChatMessage)
-        showChatMessageCheckbox:SetScript("OnClick", function(self)
-            db.specificSettings.showChatMessage = self:GetChecked()
-        end)
+        local showChatMessageCheckbox = CreateSettingCheckbox(
+            pageGeneral, showWelcomeMessageCheckbox, "BOTTOMLEFT", 0, -8,
+            "Show flavor message when using " .. addon.CONST.ADDON_DISPLAY_NAME,
+            db.specificSettings, "showChatMessage"
+        )
         addon.showChatMessageCheckbox = showChatMessageCheckbox
 
-        local showChatMessageLabel = pageGeneral:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        showChatMessageLabel:SetPoint("LEFT", showChatMessageCheckbox, "RIGHT", 5, 0)
-        showChatMessageLabel:SetText("Show flavor message when using " .. addon.CONST.ADDON_DISPLAY_NAME)
-
         -- Sound toggle
-        local playSoundWhenFrameShownCheckbox = CreateFrame("CheckButton", nil, pageGeneral, "ChatConfigCheckButtonTemplate")
-        playSoundWhenFrameShownCheckbox:SetPoint("TOPLEFT", showChatMessageCheckbox, "BOTTOMLEFT", 0, -8)
-        playSoundWhenFrameShownCheckbox:SetChecked(db.generalSettings.playSoundWhenFrameShown)
-        playSoundWhenFrameShownCheckbox:SetScript("OnClick", function(self)
-            db.generalSettings.playSoundWhenFrameShown = self:GetChecked()
-        end)
+        local playSoundWhenFrameShownCheckbox = CreateSettingCheckbox(
+            pageGeneral, showChatMessageCheckbox, "BOTTOMLEFT", 0, -8,
+            "Play sound when show/hide " .. addon.CONST.ADDON_DISPLAY_NAME,
+            db.generalSettings, "playSoundWhenFrameShown"
+        )
         addon.playSoundWhenFrameShownCheckbox = playSoundWhenFrameShownCheckbox
 
-        local playSoundWhenFrameShownLabel = pageGeneral:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        playSoundWhenFrameShownLabel:SetPoint("LEFT", playSoundWhenFrameShownCheckbox, "RIGHT", 5, 0)
-        playSoundWhenFrameShownLabel:SetText("Play sound when show/hide " .. addon.CONST.ADDON_DISPLAY_NAME)
-
         -- Hide until mouseover
-        local showButtonOnMouseOverCheckbox = CreateFrame("CheckButton", nil, pageGeneral, "ChatConfigCheckButtonTemplate")
-        showButtonOnMouseOverCheckbox:SetPoint("TOPLEFT", playSoundWhenFrameShownCheckbox, "BOTTOMLEFT", 0, -8)
-        showButtonOnMouseOverCheckbox:SetChecked(db.specificSettings.showButtonOnMouseOver)
-        showButtonOnMouseOverCheckbox:SetScript("OnClick", function(self)
-            db.specificSettings.showButtonOnMouseOver = self:GetChecked()
-            if addon.UpdateVisibility then
-                addon.UpdateVisibility()
+        local showButtonOnMouseOverCheckbox = CreateSettingCheckbox(
+            pageGeneral, playSoundWhenFrameShownCheckbox, "BOTTOMLEFT", 0, -8,
+            "Hide button until mouseover",
+            db.specificSettings, "showButtonOnMouseOver",
+            function()
+                if addon.UpdateVisibility then
+                    addon.UpdateVisibility()
+                end
             end
-        end)
+        )
         addon.showButtonOnMouseOverCheckbox = showButtonOnMouseOverCheckbox
 
-        local showButtonOnMouseOverLabel = pageGeneral:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        showButtonOnMouseOverLabel:SetPoint("LEFT", showButtonOnMouseOverCheckbox, "RIGHT", 5, 0)
-        showButtonOnMouseOverLabel:SetText("Hide button until mouseover")
-
         -- Optional swap between list and random Hearthstone click actions
-        local reverseClickActionsCheckbox = CreateFrame("CheckButton", nil, pageGeneral, "ChatConfigCheckButtonTemplate")
-        reverseClickActionsCheckbox:SetPoint("TOPLEFT", showButtonOnMouseOverCheckbox, "BOTTOMLEFT", 0, -8)
-        reverseClickActionsCheckbox:SetChecked(db.specificSettings.reverseClickActions == true)
-        reverseClickActionsCheckbox:SetScript("OnClick", function(self)
-            db.specificSettings.reverseClickActions = self:GetChecked() == true
-        end)
+        local reverseClickActionsCheckbox = CreateSettingCheckbox(
+            pageGeneral, showButtonOnMouseOverCheckbox, "BOTTOMLEFT", 0, -8,
+            "Reverse left-click and Shift-click actions",
+            db.specificSettings, "reverseClickActions"
+        )
         addon.reverseClickActionsCheckbox = reverseClickActionsCheckbox
-
-        local reverseClickActionsLabel = pageGeneral:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        reverseClickActionsLabel:SetPoint("LEFT", reverseClickActionsCheckbox, "RIGHT", 5, 0)
-        reverseClickActionsLabel:SetText("Reverse left-click and Shift-click actions")
     end
 
     ------------------------------------------------
@@ -391,25 +391,21 @@ function addon.OptionsPanel.Initialize()
     -- POSITIONING PAGE
     --------------------------------------------------------------------
     do
-        local lockPositionCheckbox = CreateFrame("CheckButton", nil, pagePosition, "ChatConfigCheckButtonTemplate")
-        lockPositionCheckbox:SetPoint("TOPLEFT", posTitle, "BOTTOMLEFT", 20, -12)
-        lockPositionCheckbox:SetChecked(_G[addon.CONST.DB_NAME].generalSettings.lockPosition)
-        lockPositionCheckbox:SetScript("OnClick", function(self)
-            local isLocked = self:GetChecked()
-            _G[addon.CONST.DB_NAME].generalSettings.lockPosition = isLocked
-            if addon.mainFrame then
-                if isLocked then
-                    addon.mainFrame:RegisterForDrag()
-                else
-                    addon.mainFrame:RegisterForDrag("LeftButton")
+        local lockPositionCheckbox = CreateSettingCheckbox(
+            pagePosition, posTitle, "BOTTOMLEFT", 20, -12,
+            "Lock Dragging",
+            SafeGetDB().generalSettings, "lockPosition",
+            function(isLocked)
+                if addon.mainFrame then
+                    if isLocked then
+                        addon.mainFrame:RegisterForDrag()
+                    else
+                        addon.mainFrame:RegisterForDrag("LeftButton")
+                    end
                 end
             end
-        end)
+        )
         addon.lockPositionCheckbox = lockPositionCheckbox
-
-        local lockPositionLabel = pagePosition:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-        lockPositionLabel:SetPoint("LEFT", lockPositionCheckbox, "RIGHT", 5, 0)
-        lockPositionLabel:SetText("Lock Dragging")
 
         local centerButton = CreateFrame("Button", nil, pagePosition, "UIPanelButtonTemplate")
         centerButton:SetSize(200, 25)
