@@ -315,6 +315,30 @@ function addon.PrintWelcomeMessage()
     end
 end
 
+-- Safe spell cooldown getter (supports table or multi-return API)
+local function GetSpellCooldownSafe(id)
+    if C_Spell and C_Spell.GetSpellCooldown then
+        local a, b, c, d = C_Spell.GetSpellCooldown(id)
+        if type(a) == "table" then
+            local info = a
+            local enabled = 0
+
+            -- isEnabled may be a secret value; never test it directly.
+            pcall(function()
+                if info.isEnabled then
+                    enabled = 1
+                end
+            end)
+
+            return info.startTime or 0, info.duration or 0, enabled, info.modRate
+        else
+            return a or 0, b or 0, c or 0, d
+        end
+    end
+
+    return 0, 0, 0, 1
+end
+
 -- Function to update the cooldown frame
 function addon.UpdateCooldown()
     if not addon.cooldownFrame then
@@ -332,29 +356,6 @@ function addon.UpdateCooldown()
             dur   = dur   / 1000
         end
         return start, dur
-    end
-
-    local function GetSpellCooldownSafe(id)
-        if C_Spell and C_Spell.GetSpellCooldown then
-            local a, b, c, d = C_Spell.GetSpellCooldown(id)
-            if type(a) == "table" then
-                local info = a
-                local start = info.startTime
-                local dur   = info.duration
-                local en = 0
-                pcall(function()
-                    if info.isEnabled then
-                        en = 1
-                    end
-                end)
-                local rate  = info.modRate
-                return start, dur, en, rate
-            else
-                -- Old-style: start, dur, enabled, modRate
-                return a, b, c, d
-            end
-        end
-        return nil, nil, nil, nil
     end
 
     local shown = false
@@ -682,28 +683,6 @@ function addon.PlayerHasProfession(professionName, requiredSkillLineID)
     end
 
     return false
-end
-
--- Safe spell cooldown getter (supports table or multi-return API)
-local function GetSpellCooldownSafe(id)
-    if C_Spell and C_Spell.GetSpellCooldown then
-        local a, b, c, d = C_Spell.GetSpellCooldown(id)
-        if type(a) == "table" then
-            local info = a
-            local enabled = 0
-            -- isEnabled may be a "secret value" in Midnight; never boolean-test it directly.
-            pcall(function()
-                if info.isEnabled then
-                    enabled = 1
-                end
-            end)
-
-            return info.startTime or 0, info.duration or 0, enabled, info.modRate
-        else
-            return a or 0, b or 0, c or 0, d
-        end
-    end
-    return 0, 0, 0, 1
 end
 
 -- Coerce cooldown values that may be "secret" in Midnight into safe numbers
