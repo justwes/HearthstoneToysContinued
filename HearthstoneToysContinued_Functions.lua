@@ -272,7 +272,6 @@ function addon.ToggleToyInclusion(itemID, isIncluded)
     if type(itemID) == "number" then
         _G[addon.CONST.DB_NAME].toySettings[itemID] = isIncluded
         addon.InitializeIncludedToys()
-        addon.ClearToyButtons()
         addon.CreateToyButtons()
     else
         -- Handle or log invalid itemID
@@ -539,14 +538,12 @@ function addon.RefreshUI()
 
     -- Refresh Included Toys Section
     if addon.CreateToyCheckboxes then
-        addon.CreateToyCheckboxes() -- Recreate toy checkboxes based on current database state
+        addon.CreateToyCheckboxes()
     end
-    if addon.ToggleToyInclusion then
-        for _, entry in ipairs(addon.CONST.availableToys) do
-            local isIncluded = _G[addon.CONST.DB_NAME].toySettings[entry.id]
-            addon.ToggleToyInclusion(entry.id, isIncluded)
-        end
-    end
+
+    -- Rebuild the included toys and their buttons once
+    addon.InitializeIncludedToys()
+    addon.CreateToyButtons()
 
     -- Force options panel refresh
     if addon.optionsPanel and addon.optionsPanel:IsShown() then
