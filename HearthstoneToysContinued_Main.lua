@@ -41,8 +41,6 @@ addon.CONST = {
     WELCOME_MESSAGE = "Type '/hstc' for options. Development maintained by Wes, based on Gerlock's Hearthstone Toys. See the fork README for project and support details.",
 }
 
-addon.isProfessionRequired = false
-addon.requiredProfession = nil
 addon.flavorTextOutputChannel = "private"
 addon.requiresTargetForFlavor = false
 
@@ -295,103 +293,4 @@ function addon.InitializeAddon()
             end
         end
     end)
-end
-
-if addon.DEBUG then
-    -- TEST COMMAND TO TEMPORARILY REMOVE A TOY FROM THE availableToys table
-    SLASH_HSTCREMOVETOY1 = "/hstcremovetoy"
-    SlashCmdList["HSTCREMOVETOY"] = function(msg)
-        local testToyID = tonumber(msg) -- Parse the toy ID from the command
-        if not testToyID then
-            print("Usage: /hstcremovetoy <toyID>")
-            return
-        end
-
-        -- Validate that the toy exists in toyList
-        local isValidToy = false
-        for _, toy in ipairs(addon.toyList) do
-            if toy.id == testToyID then
-                isValidToy = true
-                break
-            end
-        end
-
-        if not isValidToy then
-            print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Invalid toy ID.")
-            return
-        end
-
-        -- Temporarily remove the toy from availableToys
-        for i, toy in ipairs(addon.CONST.availableToys) do
-            if toy.id == testToyID then
-                table.remove(addon.CONST.availableToys, i)
-                print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Toy temporarily removed: " .. testToyID)
-                break
-            end
-        end
-
-        -- Mark the toy as "not acquired" in toySettings
-        if _G[addon.CONST.DB_NAME].toySettings[testToyID] ~= nil then
-            _G[addon.CONST.DB_NAME].toySettings[testToyID] = false
-        end
-
-        if addon.TestForgetOwnedToy then
-            addon.TestForgetOwnedToy(testToyID)
-        end
-
-        for _, entry in ipairs(addon.toyList) do
-            local itemID = entry.id
-            local hasToy = PlayerHasToy(itemID)
-            local isKnown = _G[addon.CONST.DB_NAME].toySettings[itemID]
-
-            print("Checking Toy:", itemID, "PlayerHasToy:", hasToy, "Known in DB:", isKnown)
-        end
-
-        -- Refresh the UI
-        addon.InitializeIncludedToys()
-        addon.CreateToyButtons()
-        addon.RefreshUI()
-    end
-
-    -- TEST COMMAND TO SIMULATE ACQUIRING A TOY
-    SLASH_HSTCACQUIRETOY1 = "/hstcacquiretoy"
-    SlashCmdList["HSTCACQUIRETOY"] = function(msg)
-        local testToyID = tonumber(msg) -- Parse the toy ID from the command
-        if not testToyID then
-            print("Usage: /hstcacquiretoy <toyID>")
-            return
-        end
-
-        -- Validate that the toy exists in toyList
-        local isValidToy = false
-        for _, toy in ipairs(addon.toyList) do
-            if toy.id == testToyID then
-                isValidToy = true
-                break
-            end
-        end
-
-        if not isValidToy then
-            print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Invalid toy ID.")
-            return
-        end
-
-        -- Simulate PlayerHasToy behavior for the test
-        local originalPlayerHasToy = PlayerHasToy -- Backup original function
-        PlayerHasToy = function(id)
-            if id == testToyID then
-                return true -- Simulate that the toy is now owned
-            else
-                return originalPlayerHasToy(id)
-            end
-        end
-
-        print("Simulating acquisition of toy ID:", testToyID)
-
-        -- Trigger the normal acquisition handling process
-        addon.HandleNewToyAcquisition()
-
-        -- Restore original PlayerHasToy function
-        PlayerHasToy = originalPlayerHasToy
-    end
 end

@@ -76,19 +76,6 @@ function addon.DebugPrint(...)
           addon.CONST.RESET_COLOR .. table.concat(messageParts, " "))
 end
 
--- TEST COMMAND TO SIMULATE FORGETTING A TOY
-function addon.TestForgetOwnedToy(itemID)
-    if type(itemID) ~= "number" then return end
-    lastKnownOwnedToyIDs[itemID] = nil
-    hasToySnapshotInitialized = true
-end
-
-function addon.TestMarkOwnedToy(itemID)
-    if type(itemID) ~= "number" then return end
-    lastKnownOwnedToyIDs[itemID] = true
-    hasToySnapshotInitialized = true
-end
-
 -- Check whether a toy, item, spell, or housing action is available
 function addon.IsEntryAvailable(itemID, itemType)
     if itemType == "toy" then
@@ -637,52 +624,6 @@ function addon.HandleNewToyAcquisition()
     elseif addon.DEBUG then
         addon.DebugPrint("No toy changes detected. Skipping refresh.")
     end
-end
-
-local SECONDARY_PROFESSION_SLOT_NAMES = {
-    [3] = "Archaeology",
-    [4] = "Fishing",
-    [5] = "Cooking",
-    [6] = "First Aid",
-}
-
-function addon.PlayerHasProfession(professionName, requiredSkillLineID)
-    local professionIndexes = { GetProfessions() }
-
-    -- GetProfessions returns fixed slots:
-    -- 1 = primary profession 1
-    -- 2 = primary profession 2
-    -- 3 = archaeology
-    -- 4 = fishing
-    -- 5 = cooking
-    -- 6 = first aid
-    --
-    -- Do not use ipairs here. Some slots can be nil, and ipairs stops at
-    -- the first nil, which can prevent Fishing/Cooking/etc. from being checked.
-    for slot = 1, 6 do
-        local profIndex = professionIndexes[slot]
-
-        if profIndex then
-            local name, _, _, _, _, _, skillLineID, _, _, _, skillLineName = GetProfessionInfo(profIndex)
-
-            if requiredSkillLineID and tonumber(skillLineID) == tonumber(requiredSkillLineID) then
-                return true
-            end
-
-            if professionName then
-                if name == professionName or skillLineName == professionName then
-                    return true
-                end
-
-                -- Extra safety for secondary professions, especially Fishing.
-                if SECONDARY_PROFESSION_SLOT_NAMES[slot] == professionName then
-                    return true
-                end
-            end
-        end
-    end
-
-    return false
 end
 
 -- Coerce cooldown values that may be "secret" in Midnight into safe numbers

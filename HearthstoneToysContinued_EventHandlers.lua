@@ -49,28 +49,16 @@ local function ShouldSuppressToyUpdates()
     return false, nil
 end
 
--- Profession gate logic
-addon.hasPassedProfessionGate = false
-local missingProfessionMessagePrinted = false
+-- Track whether character startup has been initiated
+addon.startupInitiated = false
 
-local function GetRequiredProfessionText()
-    return tostring(addon.requiredProfession or "Unknown")
-end
-
-local function StartAddonForCharacter(sourceEvent)
-    if addon.hasPassedProfessionGate then
+local function StartAddonForCharacter()
+    if addon.startupInitiated then
         return
     end
 
-    addon.hasPassedProfessionGate = true
+    addon.startupInitiated = true
     addon.isInitializing = true
-
-    if sourceEvent == "SKILL_LINES_CHANGED" then
-        if addon.DEBUG then
-            print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " ..
-                addon.CONST.RESET_COLOR .. "Required profession detected. " .. addon.CONST.ADDON_DISPLAY_NAME .. " is now available.")
-        end
-    end
 
     C_Timer.After(1, function()
         PlayerLogin()
@@ -85,24 +73,6 @@ local function StartAddonForCharacter(sourceEvent)
     end)
 end
 
-local function CheckRequiredProfessionAndStart(sourceEvent)
-    local hasProfession = not addon.isProfessionRequired
-        or addon.PlayerHasProfession(addon.requiredProfession, addon.requiredProfessionSkillLineID)
-
-    if hasProfession then
-        StartAddonForCharacter(sourceEvent)
-        return
-    end
-
-    if not missingProfessionMessagePrinted then
-        print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " ..
-            addon.CONST.RESET_COLOR .. "You do not have the required profession (" ..
-            GetRequiredProfessionText() .. ") to use this addon.")
-
-        missingProfessionMessagePrinted = true
-    end
-end
-
 ------------------
 -- Register events
 ------------------
@@ -115,7 +85,6 @@ eventFrame:RegisterEvent("TOYS_UPDATED")
 eventFrame:RegisterEvent("BAG_UPDATE_COOLDOWN")
 eventFrame:RegisterEvent("LOADING_SCREEN_ENABLED")
 eventFrame:RegisterEvent("LOADING_SCREEN_DISABLED")
-eventFrame:RegisterEvent("SKILL_LINES_CHANGED")
 eventFrame:SetScript("OnEvent", function(self, event, arg1)
     if event == "ADDON_LOADED" and arg1 == addon.CONST.ADDON_NAME then
         -- Your addon is loaded, initialize saved variables here
@@ -123,11 +92,7 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         eventFrame:UnregisterEvent("ADDON_LOADED") -- Unregister to prevent redundant calls
     elseif event == "PLAYER_LOGIN" then
         C_Timer.After(0.5, function()
-            CheckRequiredProfessionAndStart("PLAYER_LOGIN")
-        end)
-    elseif event == "SKILL_LINES_CHANGED" then
-        C_Timer.After(0.5, function()
-            CheckRequiredProfessionAndStart("SKILL_LINES_CHANGED")
+            StartAddonForCharacter()
         end)
     elseif event == "LOADING_SCREEN_ENABLED" then
         inLoadingScreen = true
@@ -143,9 +108,9 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         end
 
     elseif event == "PLAYER_ENTERING_WORLD" then
-        if not addon.hasPassedProfessionGate then
+        if not addon.startupInitiated then
             C_Timer.After(2, function()
-                CheckRequiredProfessionAndStart("PLAYER_ENTERING_WORLD")
+                StartAddonForCharacter()
             end)
             return
         end
@@ -162,21 +127,21 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
             end
         end)
     elseif event == "SPELL_UPDATE_COOLDOWN" then
-        if not addon.hasPassedProfessionGate then return end
+        if not addon.startupInitiated then return end
 
         if addon.DEBUG then print("SPELL_UPDATE_COOLDOWN") end
         addon.UpdateCooldown()
         if addon.UpdateAllToyButtonCooldowns then addon.UpdateAllToyButtonCooldowns() end
 
     elseif event == "BAG_UPDATE_COOLDOWN" then
-        if not addon.hasPassedProfessionGate then return end
+        if not addon.startupInitiated then return end
 
         if addon.DEBUG then print("BAG_UPDATE_COOLDOWN") end
         addon.UpdateCooldown()
         if addon.UpdateAllToyButtonCooldowns then addon.UpdateAllToyButtonCooldowns() end
 
     elseif event == "TOYS_UPDATED" then
-        if not addon.hasPassedProfessionGate then return end
+        if not addon.startupInitiated then return end
 
         local suppress, reason = ShouldSuppressToyUpdates()
         if suppress then
