@@ -520,7 +520,6 @@ function addon.OptionsPanel.Initialize()
                 }
                 presetNameInput:SetText("")
                 ResetPresetSelection()
-                presetsDropdown:GenerateMenu()
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: "  .. addon.CONST.RESET_COLOR .. "Preset: '" .. presetName .. "' saved.")
             else
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Please enter a valid preset name.")
@@ -539,7 +538,6 @@ function addon.OptionsPanel.Initialize()
                 addon.LoadMainFramePosition()
                 presetNameInput:SetText("")
                 ResetPresetSelection()
-                presetsDropdown:GenerateMenu()
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Preset: '" .. presetName .. "' loaded.")
             else
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Preset: '" .. tostring(presetName) .. "' not found.")
@@ -553,7 +551,6 @@ function addon.OptionsPanel.Initialize()
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Preset: '" .. presetName .. "' deleted.")
                 presetNameInput:SetText("")
                 ResetPresetSelection()
-                presetsDropdown:GenerateMenu()
             else
                 print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. "Preset: '" .. tostring(presetName) .. "' not found.")
             end
