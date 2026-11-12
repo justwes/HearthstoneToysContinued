@@ -496,12 +496,10 @@ function addon.RefreshUI()
     addon.InitializeIncludedToys()
     addon.CreateToyButtons()
 
-    -- Force options panel refresh
-    if addon.optionsPanel and addon.optionsPanel:IsShown() then
-        addon.optionsPanel:Hide()
-        C_Timer.After(0.1, function()
-            addon.optionsPanel:Show()
-        end)
+    -- Refresh the Included Toys panel if it is currently visible
+    if addon.optionsPanel and addon.optionsPanel:IsShown()
+        and addon.OptionsPanel.RefreshIncludedToysUI then
+        addon.OptionsPanel.RefreshIncludedToysUI()
     end
 end
 
