@@ -394,10 +394,6 @@ end
 
 -- Function to update toy button positions
 function addon.UpdateToyButtonPositions()
-    if addon.DEBUG then
-        -- addon.DebugPrint("UpdateToyButtonPositions: Called from", debugstack(2, 1, 0):match("([^/\\]+%.lua:%d+)"))
-    end
-
     local toyFramePosition = _G[addon.CONST.DB_NAME].specificSettings.toyFramePosition or "LEFT"
     local buttonSize = _G[addon.CONST.DB_NAME].specificSettings.buttonSize
     local spacing = 3

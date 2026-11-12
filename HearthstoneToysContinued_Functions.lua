@@ -232,8 +232,6 @@ function addon.ToggleToyInclusion(itemID, isIncluded)
         _G[addon.CONST.DB_NAME].toySettings[itemID] = isIncluded
         addon.InitializeIncludedToys()
         addon.CreateToyButtons()
-    else
-        -- Handle or log invalid itemID
     end
 end
 
