@@ -943,6 +943,9 @@ function addon.OptionsPanel.Initialize()
         if addon.lockPositionCheckbox then
             addon.lockPositionCheckbox:SetChecked(db.generalSettings.lockPosition)
         end
+        if addon.positionDropdown then
+            addon.positionDropdown:GenerateMenu()
+        end
         if addon.xPositionInput then
             addon.xPositionInput:SetText(tostring(db.mainFramePosition.xOfs or 0))
         end

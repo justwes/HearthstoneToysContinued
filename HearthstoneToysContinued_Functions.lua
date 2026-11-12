@@ -455,42 +455,15 @@ function addon.RefreshUI()
         addon.DebugPrint("addon.RefreshUI called")
     end
 
-    -- Update the General Settings Section
-    if addon.generalSettingsCheckbox then
-        addon.generalSettingsCheckbox:SetChecked(_G[addon.CONST.DB_NAME].generalSettings.showWelcomeMessage)
-    end
-    if addon.showChatMessageCheckbox then
-        addon.showChatMessageCheckbox:SetChecked(_G[addon.CONST.DB_NAME].specificSettings.showChatMessage)
-    end
-    if addon.playSoundWhenFrameShownCheckbox then
-        addon.playSoundWhenFrameShownCheckbox:SetChecked(_G[addon.CONST.DB_NAME].generalSettings.playSoundWhenFrameShown)
-    end
-    if addon.showButtonOnMouseOverCheckbox then
-        addon.showButtonOnMouseOverCheckbox:SetChecked(_G[addon.CONST.DB_NAME].specificSettings.showButtonOnMouseOver)
-    end
+    -- Apply the current visibility setting
     addon.UpdateVisibility()
 
     -- Refresh the Position Settings Section
-    if addon.lockPositionCheckbox then
-        addon.lockPositionCheckbox:SetChecked(_G[addon.CONST.DB_NAME].generalSettings.lockPosition)
-    end
-    addon.mainFrame:RegisterForDrag("LeftButton")  -- Register drag
+    addon.mainFrame:RegisterForDrag("LeftButton")
     if addon.presetsDropdown and addon.ResetPresetSelection then
         addon.ResetPresetSelection()
     end
     addon.LoadMainFramePosition()
-
-    -- Refresh the Toy Button Position Section
-        if addon.positionDropdown then
-        addon.positionDropdown:GenerateMenu()
-    end
-    
-    -- Refresh Size Settings Section
-    if addon.sizeSlider and addon.sizeInput then
-        local buttonSize = _G[addon.CONST.DB_NAME].specificSettings.buttonSize or 44
-        addon.sizeSlider:SetValue(buttonSize)
-        addon.sizeInput:SetText(math.floor(buttonSize))
-    end
 
     -- Rebuild the included toys and their buttons once
     addon.InitializeIncludedToys()
