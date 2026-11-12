@@ -195,25 +195,7 @@ end
 
 -- Create toy buttons for included toys and items
 function addon.CreateToyButtons()
-    -- if addon.DEBUG then
-    --     local trace = debugstack(2, 3, 0)
-    --     addon.DebugPrint("CreateToyButtons: Trace\n" .. trace)
-    -- end
-
     addon.ClearToyButtons()
-
-    if addon.DEBUG then
-        -- addon.DebugPrint("CreateToyButtons: Scanning", #addon.CONST.includeToys, "toys")
-        
-        for index, itemID in ipairs(addon.CONST.includeToys) do
-            local isToy = PlayerHasToy(itemID)
-            local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
-            local itemCount = C_Item.GetItemCount(itemID)
-
-            -- addon.DebugPrint(string.format("ItemID %s: isToy=%s, isSpell=%s, itemCount=%s",
-            --     itemID, tostring(isToy), tostring(isSpell), tostring(itemCount)))
-        end
-    end
 
     -- Map each entry ID to its type for availability checks
     local entryTypes = {}
