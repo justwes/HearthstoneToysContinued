@@ -521,12 +521,11 @@ function addon.HandleNewToyAcquisition()
     local newlyAcquired = {}
     local currentOwnedToyIDs = {}
 
-    -- Scan the toy list
+    -- Scan owned toys for acquisition changes
     for _, entry in ipairs(addon.toyList) do
         local itemID = entry.id
-        local hasToy = PlayerHasToy(itemID)
 
-        if entry.type == "toy" and hasToy then
+        if entry.type == "toy" and PlayerHasToy(itemID) then
             currentOwnedToyIDs[itemID] = true
 
             local isNewlyAcquired = hasToySnapshotInitialized and not lastKnownOwnedToyIDs[itemID]
@@ -572,20 +571,8 @@ function addon.HandleNewToyAcquisition()
     lastKnownOwnedToyIDs = currentOwnedToyIDs
     hasToySnapshotInitialized = true
 
-    -- Always update available toys
+    -- Rebuild available toys using current ownership information
     addon.InitializeAvailableToys()
-
-    -- Update availableToys if any new ones were found
-    local availableToyIDs = {}
-    for _, toy in ipairs(addon.CONST.availableToys) do
-        availableToyIDs[toy.id] = true
-    end
-
-    for _, toy in ipairs(newlyAcquired) do
-        if not availableToyIDs[toy.id] then
-            table.insert(addon.CONST.availableToys, toy)
-        end
-    end
 
     -- Only refresh UI and print if toys actually changed
     if toysChanged then
