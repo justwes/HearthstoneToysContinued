@@ -537,7 +537,7 @@ function addon.CreateButton(itemID, parent, index)
         toyActionButton._cdID = itemID
 
     elseif isToy then
-        local _, toyName, toyTexture = C_ToyBox.GetToyInfo(itemID)
+        local _, _, toyTexture = C_ToyBox.GetToyInfo(itemID)
         texture = toyTexture
         tooltipFunc = function(self)
             if C_Item.GetItemInfo(itemID) then
@@ -556,7 +556,6 @@ function addon.CreateButton(itemID, parent, index)
         toyActionButton._cdID   = itemID
 
     elseif isSpell then
-        local spellName = C_Spell.GetSpellName(itemID)
         texture = C_Spell.GetSpellTexture(itemID)
         tooltipFunc = function(self)
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -571,7 +570,7 @@ function addon.CreateButton(itemID, parent, index)
         toyActionButton._cdID   = itemID
 
     else
-        local itemName, _, _, _, _, _, _, _, _, itemTexture = C_Item.GetItemInfo(itemID)
+        local _, _, _, _, _, _, _, _, _, itemTexture = C_Item.GetItemInfo(itemID)
         texture = itemTexture
         tooltipFunc = function(self)
             if C_Item.GetItemInfo(itemID) then
