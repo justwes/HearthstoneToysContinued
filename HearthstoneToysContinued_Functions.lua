@@ -492,13 +492,6 @@ function addon.RefreshUI()
         addon.sizeInput:SetText(math.floor(buttonSize))
     end
 
-    addon.UpdateToyButtonPositions()
-
-    -- Refresh Included Toys Section
-    if addon.CreateToyCheckboxes then
-        addon.CreateToyCheckboxes()
-    end
-
     -- Rebuild the included toys and their buttons once
     addon.InitializeIncludedToys()
     addon.CreateToyButtons()
