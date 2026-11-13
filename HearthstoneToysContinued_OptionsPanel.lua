@@ -683,8 +683,9 @@ function addon.OptionsPanel.Initialize()
         AddColumnHeader("Show in list", 235, 76)
         AddColumnHeader("Random", 335, 56)
 
-        -- checkbox cache
-        local toyCheckBoxes = {}
+        -- Reusable checkbox pairs for Included Toys
+        local toyRows = {}
+        local refreshGeneration = 0
 
         local function GetEntryName(entry)
             local itemID = entry.id
@@ -723,51 +724,135 @@ function addon.OptionsPanel.Initialize()
             end
         end
 
+                -- Create one reusable pair of Included Toys checkboxes
+        local function CreateToyRow()
+            local row = {}
+
+            -- Show in list checkbox
+            local showCB = CreateFrame(
+                "CheckButton",
+                nil,
+                toysContent,
+                "InterfaceOptionsCheckButtonTemplate"
+            )
+
+            showCB.Text:SetText("Loading...")
+            showCB.Text:SetWidth(240)
+            showCB.Text:SetJustifyH("LEFT")
+            showCB.Text:SetWordWrap(false)
+
+            row.showCB = showCB
+
+            -- Random selection checkbox
+            local randomCB = CreateFrame(
+                "CheckButton",
+                nil,
+                toysContent,
+                "InterfaceOptionsCheckButtonTemplate"
+            )
+
+            randomCB.Text:SetText("")
+            row.randomCB = randomCB
+
+            -- Read the current row assignment when clicked.
+            -- This prevents reused frames from modifying old entries.
+            showCB:SetScript("OnClick", function(self)
+                local itemID = row.itemID
+                if not itemID then return end
+
+                if addon.ToggleToyInclusion then
+                    addon.ToggleToyInclusion(itemID, self:GetChecked())
+                else
+                    local db = SafeGetDB()
+                    db.toySettings[itemID] = self:GetChecked()
+
+                    if addon.InitializeIncludedToys then
+                        addon.InitializeIncludedToys()
+                    end
+
+                    if addon.CreateToyButtons then
+                        addon.CreateToyButtons()
+                    end
+
+                    if addon.UpdateToyButtonPositions then
+                        addon.UpdateToyButtonPositions()
+                    end
+                end
+            end)
+
+            randomCB:SetScript("OnClick", function(self)
+                local itemID = row.itemID
+                if not itemID then return end
+
+                local db = SafeGetDB()
+                db.randomToySettings[itemID] = self:GetChecked() == true
+            end)
+
+            return row
+        end
+
         local function RefreshIncludedToysUI()
             local db = SafeGetDB()
             EnsureToyDefaults(db)
 
-            -- Rebuild available list
             if addon.InitializeAvailableToys then
                 addon.InitializeAvailableToys()
             end
 
-            -- Hide old checkboxes
-            for _, cb in ipairs(toyCheckBoxes) do
-                cb:Hide()
-            end
-            wipe(toyCheckBoxes)
+            refreshGeneration = refreshGeneration + 1
+            local generation = refreshGeneration
 
-            local y = -6
-            local index = 0
+            local availableToys = addon.CONST.availableToys or {}
 
-            for _, entry in ipairs(addon.CONST.availableToys or {}) do
+            for index, entry in ipairs(availableToys) do
                 local itemID = entry.id
-                local itemType = entry.type
+                local y = -6 - ((index - 1) * 26)
 
-                local cb = CreateFrame("CheckButton", nil, toysContent, "InterfaceOptionsCheckButtonTemplate")
-                cb:SetPoint("TOPLEFT", toysContent, "TOPLEFT", 260, y)
-                cb.Text:SetText("Loading...")
-                cb.Text:ClearAllPoints()
-                cb.Text:SetPoint(
-                    "TOPLEFT", toysContent, "TOPLEFT", 8, y - 8
+                -- Reuse an existing row or create one if necessary
+                local row = toyRows[index]
+
+                if not row then
+                    row = CreateToyRow()
+                    toyRows[index] = row
+                end
+
+                row.itemID = itemID
+                row.entry = entry
+                row.generation = generation
+
+                local showCB = row.showCB
+                local randomCB = row.randomCB
+
+                -- Update checkbox positions
+                showCB:ClearAllPoints()
+                showCB:SetPoint(
+                    "TOPLEFT",
+                    toysContent,
+                    "TOPLEFT",
+                    260,
+                    y
                 )
-                cb.Text:SetWidth(240)
-                cb.Text:SetJustifyH("LEFT")
-                cb.Text:SetWordWrap(false)
 
-                cb:SetChecked(db.toySettings[itemID] == true)
-                cb:SetScript("OnClick", function(self)
-                    if addon.ToggleToyInclusion then
-                        addon.ToggleToyInclusion(itemID, self:GetChecked())
-                    else
-                        -- fallback, just set db (should exist in your addon though)
-                        db.toySettings[itemID] = self:GetChecked()
-                        if addon.InitializeIncludedToys then addon.InitializeIncludedToys() end
-                        if addon.CreateToyButtons then addon.CreateToyButtons() end
-                        if addon.UpdateToyButtonPositions then addon.UpdateToyButtonPositions() end
-                    end
-                end)
+                showCB.Text:ClearAllPoints()
+                showCB.Text:SetPoint(
+                    "TOPLEFT",
+                    toysContent,
+                    "TOPLEFT",
+                    8,
+                    y - 8
+                )
+
+                randomCB:ClearAllPoints()
+                randomCB:SetPoint(
+                    "TOPLEFT",
+                    toysContent,
+                    "TOPLEFT",
+                    350,
+                    y
+                )
+
+                -- Update selected states
+                showCB:SetChecked(db.toySettings[itemID] == true)
 
                 if db.randomToySettings[itemID] == nil then
                     db.randomToySettings[itemID] =
@@ -775,46 +860,56 @@ function addon.OptionsPanel.Initialize()
                         and db.toySettings[itemID] == true
                 end
 
-                local randomCB = CreateFrame(
-                    "CheckButton",
-                    nil,
-                    toysContent,
-                    "InterfaceOptionsCheckButtonTemplate"
+                randomCB:SetChecked(
+                    db.randomToySettings[itemID] == true
                 )
-                randomCB:SetPoint("TOPLEFT", toysContent, "TOPLEFT", 350, y)
-                randomCB.Text:SetText("")
-                randomCB:SetChecked(db.randomToySettings[itemID] == true)
 
-                randomCB:SetScript("OnClick", function(self)
-                    db.randomToySettings[itemID] = self:GetChecked() == true
-                end)
-
-                table.insert(toyCheckBoxes, randomCB)
-
-                -- Name resolution with a couple retries (matches your original idea)
+                -- Resolve item names asynchronously when necessary.
+                -- Ignore callbacks from earlier refresh generations.
                 local function UpdateName(attemptsLeft)
+                    if row.generation ~= generation
+                        or row.entry ~= entry then
+                        return
+                    end
+
                     local name = GetEntryName(entry)
+
                     if name and name ~= "" then
-                        cb.Text:SetText(name)
+                        showCB.Text:SetText(name)
+                    elseif attemptsLeft > 0 then
+                        C_Timer.After(0.5, function()
+                            UpdateName(attemptsLeft - 1)
+                        end)
                     else
-                        if attemptsLeft > 0 then
-                            C_Timer.After(0.5, function() UpdateName(attemptsLeft - 1) end)
-                        else
-                            cb.Text:SetText("Unknown")
-                        end
+                        showCB.Text:SetText("Unknown")
                     end
                 end
+
+                showCB.Text:SetText("Loading...")
+
+                showCB:Show()
+                randomCB:Show()
+
                 UpdateName(5)
-
-                table.insert(toyCheckBoxes, cb)
-
-                index = index + 1
-                y = y - 26
             end
 
-            toysContent:SetHeight(math.max(400, (index * 26) + 20))
+            -- Hide rows that are no longer needed
+            for index = #availableToys + 1, #toyRows do
+                local row = toyRows[index]
+
+                row.itemID = nil
+                row.entry = nil
+                row.generation = generation
+
+                row.showCB:Hide()
+                row.randomCB:Hide()
+            end
+
+            toysContent:SetHeight(
+                math.max(400, (#availableToys * 26) + 20)
+            )
         end
-    
+
         -- Expose so other modules can call it if needed
         addon.OptionsPanel.RefreshIncludedToysUI = RefreshIncludedToysUI
 
