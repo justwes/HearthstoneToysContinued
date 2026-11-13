@@ -376,21 +376,38 @@ function addon.UIFrames.Initialize()
 end
 
 function addon.UpdateVisibility()
+    if not addon.mainFrame then
+        return
+    end
+
+    -- Defer protected visibility changes until combat ends.
+    if InCombatLockdown() then
+        addon.pendingVisibilityUpdate = true
+        return
+    end
+
+    addon.pendingVisibilityUpdate = false
+
     if addon.DEBUG then
         local trace = debugstack(2, 3, 0)
         addon.DebugPrint("UpdateVisibility: Trace\n" .. trace)
     end
 
-    local showOnMouseover = _G[addon.CONST.DB_NAME].specificSettings.showButtonOnMouseOver
+    -- Register the visibility driver only once.
+    if not addon.visibilityDriverRegistered then
+        RegisterStateDriver(
+            addon.mainFrame,
+            "visibility",
+            "[petbattle][overridebar][vehicleui][possessbar][@vehicle,exists] hide; show"
+        )
 
-    -- Always apply state driver for protected UI conditions
-    RegisterStateDriver(addon.mainFrame, "visibility", "[petbattle][overridebar][vehicleui][possessbar][@vehicle,exists] hide; show")
-
-    if showOnMouseover then
-        addon.mainFrame:SetAlpha(0)
-    else
-        addon.mainFrame:SetAlpha(1)
+        addon.visibilityDriverRegistered = true
     end
+
+    local showOnMouseover =
+        _G[addon.CONST.DB_NAME].specificSettings.showButtonOnMouseOver
+
+    addon.mainFrame:SetAlpha(showOnMouseover and 0 or 1)
 end
 
 -- Function to update toy button positions

@@ -284,7 +284,6 @@ function addon.FlavorMessage()
 end
 
 function addon.PrintWelcomeMessage()
-    -- Print Welcome Message
     if _G[addon.CONST.DB_NAME].generalSettings.showWelcomeMessage then
         print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " .. addon.CONST.RESET_COLOR .. addon.CONST.WELCOME_MESSAGE)
     end

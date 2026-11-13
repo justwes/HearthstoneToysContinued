@@ -23,7 +23,8 @@ local function PlayerLogin()
         addon.LoadMainFramePosition()
         addon.AddonUpdatedMessage()
     end)
-    C_Timer.After(2, function()  -- delay
+
+    C_Timer.After(2, function()
         addon.InitializeAvailableToys()
         addon.InitializeIncludedToys()
         addon.CreateToyFrame()
@@ -32,6 +33,13 @@ local function PlayerLogin()
         addon.mainFrame:SetSize(addon.buttonSize, addon.buttonSize)
         addon.PrintWelcomeMessage()
         C_Timer.After(0.1, addon.UpdateVisibility)
+
+        -- Mark initialisation complete once the toy buttons are ready.
+        addon.isInitializing = false
+
+        if addon.DEBUG then
+            addon.DebugPrint("Initialization complete. TOYS_UPDATED events will now be processed.")
+        end
     end)
 end
 
@@ -60,14 +68,6 @@ local function StartAddonForCharacter()
 
     C_Timer.After(1, function()
         PlayerLogin()
-    end)
-
-    C_Timer.After(2, function()
-        addon.isInitializing = false
-
-        if addon.DEBUG then
-            addon.DebugPrint("Initialization complete. TOYS_UPDATED events will now be processed.")
-        end
     end)
 end
 
@@ -103,6 +103,11 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
 
             addon.InitializeIncludedToys()
             addon.CreateToyButtons()
+        end
+
+        -- Apply any visibility changes requested during combat.
+        if addon.pendingVisibilityUpdate then
+            addon.UpdateVisibility()
         end
 
     elseif event == "LOADING_SCREEN_ENABLED" then
