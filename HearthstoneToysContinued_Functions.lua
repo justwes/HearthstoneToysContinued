@@ -188,13 +188,21 @@ end
 function addon.ClearToyButtons()
     for _, toyActionButton in ipairs(addon.CONST.toyButtons) do
         toyActionButton:Hide()
-        toyActionButton:SetParent(nil)
     end
-    wipe(addon.CONST.toyButtons) -- Clear the toy buttons table
+
+    wipe(addon.CONST.toyButtons)
 end
 
 -- Create toy buttons for included toys and items
 function addon.CreateToyButtons()
+    -- Secure buttons cannot be rebuilt during combat.
+    -- Queue one rebuild to run when combat ends.
+    if InCombatLockdown() then
+        addon.pendingToyButtonRebuild = true
+        return
+    end
+
+    addon.pendingToyButtonRebuild = false
     addon.ClearToyButtons()
 
     -- Map each entry ID to its type for availability checks

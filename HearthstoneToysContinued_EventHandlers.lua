@@ -81,6 +81,7 @@ eventFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 eventFrame:RegisterEvent("TOYS_UPDATED")
 eventFrame:RegisterEvent("BAG_UPDATE_COOLDOWN")
+eventFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
 eventFrame:RegisterEvent("LOADING_SCREEN_ENABLED")
 eventFrame:RegisterEvent("LOADING_SCREEN_DISABLED")
 eventFrame:SetScript("OnEvent", function(self, event, arg1)
@@ -92,6 +93,18 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         C_Timer.After(0.5, function()
             StartAddonForCharacter()
         end)
+
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        if addon.pendingToyButtonRebuild then
+            -- Apply the latest saved size before rebuilding buttons
+            if addon.mainFrame then
+                addon.mainFrame:SetSize(addon.buttonSize, addon.buttonSize)
+            end
+
+            addon.InitializeIncludedToys()
+            addon.CreateToyButtons()
+        end
+
     elseif event == "LOADING_SCREEN_ENABLED" then
         inLoadingScreen = true
         -- While loading, block TOYS_UPDATED entirely

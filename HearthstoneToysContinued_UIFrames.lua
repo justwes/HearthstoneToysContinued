@@ -10,6 +10,9 @@ addon.mainFrame = nil
 addon.toyFrame = nil
 addon.cooldownFrame = nil
 
+-- Reuse secure action buttons by item or spell ID
+addon.toyButtonCache = {}
+
 local function PrintNotUsableInCombat()
     print(addon.CONST.ADDON_TEXT_COLOR .. "[" .. addon.CONST.ADDON_DISPLAY_NAME .. "]: " ..
         addon.CONST.RESET_COLOR .. "Not usable in combat.")
@@ -21,14 +24,12 @@ function addon.CreateToyFrame()
         addon.DebugPrint("CreateToyFrame: Called from", debugstack(2, 1, 0):match("([^/\\]+%.lua:%d+)"))
     end
     
-    -- Destroy the old frame if it exists
+    -- Reuse the existing container instead of recreating it
     if addon.toyFrame then
-        addon.toyFrame:Hide()
-        addon.toyFrame:SetParent(nil)
-        addon.toyFrame = nil
+        return
     end
 
-    -- Recreate the frame
+    -- Create the container once
     addon.toyFrame = CreateFrame("Frame", addon.CONST.ADDON_NAME .. "ToyFrame", UIParent, "BackdropTemplate")
     addon.toyFrame:SetSize(#addon.toyList * (addon.buttonSize + 4), addon.buttonSize + 4)
     addon.toyFrame:SetFrameStrata("HIGH")
@@ -394,6 +395,12 @@ end
 
 -- Function to update toy button positions
 function addon.UpdateToyButtonPositions()
+    -- Defer changes to secure button positions until combat ends
+    if InCombatLockdown() then
+        addon.pendingToyButtonRebuild = true
+        return
+    end
+
     local toyFramePosition = _G[addon.CONST.DB_NAME].specificSettings.toyFramePosition or "LEFT"
     local buttonSize = _G[addon.CONST.DB_NAME].specificSettings.buttonSize
     local spacing = 3
@@ -474,8 +481,40 @@ end
 -- Function to Create Toy Buttons
 ---------------------------------
 function addon.CreateButton(itemID, parent, index)
-    local toyActionButton = CreateFrame("Button", addon.CONST.ADDON_NAME .. "Button" .. index, parent, "SecureActionButtonTemplate")
+    -- Reuse an existing button for this item or spell
+    -- Housing attributes depend on the current home.
+    -- Rebuild housing buttons to keep those attributes current.
+    local isHousing = itemID == 1233637
+    local cachedButton = not isHousing and addon.toyButtonCache[itemID]
+
+    if cachedButton then
+        if cachedButton:GetParent() ~= parent then
+            cachedButton:SetParent(parent)
+        end
+
+        cachedButton:SetSize(addon.buttonSize, addon.buttonSize)
+        cachedButton:Show()
+
+        return cachedButton
+    end
+
+    -- Create a new secure button only when necessary
+    local buttonName = not isHousing
+        and (addon.CONST.ADDON_NAME .. "Button" .. itemID)
+        or nil
+
+    local toyActionButton = CreateFrame(
+        "Button",
+        buttonName,
+        parent,
+        "SecureActionButtonTemplate"
+    )
+
     toyActionButton:SetSize(addon.buttonSize, addon.buttonSize)
+
+    if not isHousing then
+        addon.toyButtonCache[itemID] = toyActionButton
+    end
 
     local isToy = PlayerHasToy(itemID)
     local isSpell = C_SpellBook.IsSpellInSpellBook(itemID, Enum.SpellBookSpellBank.Player, false)
@@ -636,7 +675,15 @@ function addon.CreateButton(itemID, parent, index)
     ----------------------------------------------------------------
     -- >>> Add a cooldown overlay on each toyActionButton
     ----------------------------------------------------------------
-    local cd = CreateFrame("Cooldown", toyActionButton:GetName() .. "Cooldown", toyActionButton, "CooldownFrameTemplate")
+    local cooldownName = toyActionButton:GetName()
+    cooldownName = cooldownName and (cooldownName .. "Cooldown") or nil
+
+    local cd = CreateFrame(
+        "Cooldown",
+        cooldownName,
+        toyActionButton,
+        "CooldownFrameTemplate"
+    )
     cd:SetAllPoints(toyActionButton)
     cd:SetFrameStrata(toyActionButton:GetFrameStrata())
     cd:SetFrameLevel(toyActionButton:GetFrameLevel() + 1)

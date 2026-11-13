@@ -354,6 +354,13 @@ function addon.OptionsPanel.Initialize()
             addon.buttonSize = value
             db.specificSettings.buttonSize = value
 
+            -- Save the new size, but defer protected frame changes
+            -- until combat ends.
+            if InCombatLockdown() then
+                addon.pendingToyButtonRebuild = true
+                return
+            end
+
             if addon.mainFrame then
                 addon.mainFrame:SetSize(value, value)
             end
