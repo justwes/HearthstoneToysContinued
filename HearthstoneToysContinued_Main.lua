@@ -27,8 +27,11 @@ addon.CONST = {
     xPositionInput, yPositionInput,
     UpdateCooldown,
     optionsCategoryId,
-        ADDON_VERSION = "1.2.1", -- Update this with each release
-        ADDON_UPDATES = "Version 1.2.1\n\n" ..
+        ADDON_VERSION = "1.2.2", -- Update this with each release
+        ADDON_UPDATES = "Version 1.2.2\n\n" ..
+            "Fixed first toy acquisition after login and missing travel icons.\n\n" ..
+            "Improved travel-list refreshes, including the housing button.\n\n" ..
+            "Version 1.2.1\n\n" ..
             "NEW: Hiveborne Hearthstone, Shadeweaver's Hearthstone, and Personal Key to the Arcantina.\n\n" ..
             "NEW: Teleport: Moonglade, Dreamwalk, Death Gate, Zen Pilgrimage, and Teleport: Hall of the Guardian.\n\n" ..
             "NEW: Housing teleport and return travel, with matching icons, tooltips, and cooldowns.\n\n" ..

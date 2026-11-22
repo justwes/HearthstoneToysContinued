@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.2] - 2026-11-22
+
+### Fixed
+
+- Initialise toy ownership at login so the first newly learned toy is detected correctly.
+- Retry missing travel icons through the correct toy, item, or spell API, and use icons that load on the final attempt.
+- Reuse the housing button and its cooldown display while refreshing its destination when the travel list is rebuilt.
+
+### Changed
+
+- Reuse travel buttons and Included Toys rows to cut down on UI work during refreshes.
+- Simplify availability, cooldown, and combat-deferred updates.
+
+### Testing
+
+- Verified saved settings, position presets, manual and random travel, cooldowns, housing teleport and return, and combat-deferred list updates on Live.
+- Passed the automated toy-acquisition regression test.
+
 ## [1.2.1] - 2026-11-01
 
 ### Added
