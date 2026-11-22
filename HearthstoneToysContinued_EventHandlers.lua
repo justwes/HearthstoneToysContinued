@@ -25,6 +25,9 @@ local function PlayerLogin()
     end)
 
     C_Timer.After(2, function()
+        -- Establish the ownership baseline before monitoring acquisitions.
+        addon.HandleNewToyAcquisition()
+
         addon.InitializeAvailableToys()
         addon.InitializeIncludedToys()
         addon.CreateToyFrame()
