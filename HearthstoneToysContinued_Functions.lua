@@ -462,6 +462,14 @@ function addon.RefreshUI()
         addon.DebugPrint("addon.RefreshUI called")
     end
 
+    -- Defer the full refresh if secure frames are protected.
+    if InCombatLockdown() then
+        addon.pendingFullUIRefresh = true
+        return
+    end
+
+    addon.pendingFullUIRefresh = false
+
     -- Apply the current visibility setting
     addon.UpdateVisibility()
 

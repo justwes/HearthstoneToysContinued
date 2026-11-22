@@ -95,8 +95,16 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         end)
 
     elseif event == "PLAYER_REGEN_ENABLED" then
-        if addon.pendingToyButtonRebuild then
-            -- Apply the latest saved size before rebuilding buttons
+        if addon.pendingFullUIRefresh then
+            -- Apply the latest saved size before the full refresh.
+            if addon.mainFrame then
+                addon.mainFrame:SetSize(addon.buttonSize, addon.buttonSize)
+            end
+
+            addon.RefreshUI()
+
+        elseif addon.pendingToyButtonRebuild then
+            -- Apply the latest saved size before rebuilding buttons.
             if addon.mainFrame then
                 addon.mainFrame:SetSize(addon.buttonSize, addon.buttonSize)
             end
@@ -134,7 +142,8 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
         C_Timer.After(4, function()
             addon.UpdateCooldown()
             if addon.UpdateAllToyButtonCooldowns then addon.UpdateAllToyButtonCooldowns() end
-            if #addon.CONST.toyButtons == 0 then
+            -- Recover only if the toy container was never created
+            if not addon.toyFrame then
                 if addon.DEBUG then
                     addon.DebugPrint("PLAYER_ENTERING_WORLD: Rebuilding toy buttons...")
                 end
@@ -180,14 +189,6 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
                 end
 
                 addon.HandleNewToyAcquisition()
-
-                -- Retry toyFrame creation if needed
-                if #addon.CONST.toyButtons == 0 then
-                    if addon.DEBUG then
-                        addon.DebugPrint("TOYS_UPDATED: No toy buttons found, retrying CreateToyFrame...")
-                    end
-                    addon.CreateToyFrame()
-                end
             end)
         else
             if addon.DEBUG then
