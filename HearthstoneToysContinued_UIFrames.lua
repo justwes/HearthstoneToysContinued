@@ -459,52 +459,53 @@ function addon.UpdateToyButtonPositions()
     end
 end
 
--- Function to Set the Button Texture
-local function SetButtonTexture(toyActionButton, itemID, texture, retries)
+-- Set the button texture, retrying with the API for this button.
+local function SetButtonTexture(toyActionButton, itemID, texture, retries, isToy, isSpell)
+    if texture and texture ~= "" then
+        toyActionButton:SetNormalTexture(texture)
+        return
+    end
+
     if retries == 0 then
-        -- If no retries left, set the default question mark texture
         toyActionButton:SetNormalTexture("Interface\\Icons\\INV_Misc_QuestionMark")
         return
     end
 
-    if texture and texture ~= "" then
-        -- If texture is available, set it directly
-        toyActionButton:SetNormalTexture(texture)
-    else
-        -- Retry loading the texture after a short delay
-        C_Timer.After(0.7, function()
-            local _, _, retryTexture
-            if C_ToyBox.GetToyInfo then
-                -- Try fetching toy info
-                _, _, retryTexture = C_ToyBox.GetToyInfo(itemID)
-            elseif C_Spell.GetSpellTexture then
-                -- Try fetching spell texture
-                retryTexture = C_Spell.GetSpellTexture(itemID)
-            elseif C_Item.GetItemInfo then
-                -- Try fetching item info
-                _, _, retryTexture = C_Item.GetItemInfo(itemID)
-            else
-                -- No available methods to fetch texture
-                retryTexture = nil
-            end
+    C_Timer.After(0.7, function()
+        local retryTexture
 
-            -- Retry setting the button texture with decremented retries
-            SetButtonTexture(toyActionButton, itemID, retryTexture, retries - 1)
-        end)
-    end
+        if isToy then
+            local _, _, toyTexture = C_ToyBox.GetToyInfo(itemID)
+            retryTexture = toyTexture
+        elseif isSpell then
+            retryTexture = C_Spell.GetSpellTexture(itemID)
+        else
+            local _, _, _, _, _, _, _, _, _, itemTexture = C_Item.GetItemInfo(itemID)
+            retryTexture = itemTexture
+        end
+
+        SetButtonTexture(toyActionButton, itemID, retryTexture, retries - 1, isToy, isSpell)
+    end)
 end
 
 ---------------------------------
 -- Function to Create Toy Buttons
 ---------------------------------
-function addon.CreateButton(itemID, parent, index)
-    -- Reuse an existing button for this item or spell
-    -- Housing attributes depend on the current home.
-    -- Rebuild housing buttons to keep those attributes current.
-    local isHousing = itemID == 1233637
-    local cachedButton = not isHousing and addon.toyButtonCache[itemID]
+local function SetHousingDestination(button, home)
+    button:SetAttribute("house-neighborhood-guid", home.neighborhoodGUID)
+    button:SetAttribute("house-guid", home.houseGUID)
+    button:SetAttribute("house-plot-id", home.plotID)
+end
 
-    if cachedButton then
+function addon.CreateButton(itemID, parent, index)
+    local isHousing = itemID == 1233637
+    local home = isHousing and addon.GetHousingHome()
+    local cachedButton = addon.toyButtonCache[itemID]
+
+    if cachedButton and (not isHousing or home) then
+        if home then
+            SetHousingDestination(cachedButton, home)
+        end
         if cachedButton:GetParent() ~= parent then
             cachedButton:SetParent(parent)
         end
@@ -529,7 +530,7 @@ function addon.CreateButton(itemID, parent, index)
 
     toyActionButton:SetSize(addon.buttonSize, addon.buttonSize)
 
-    if not isHousing then
+    if not isHousing or home then
         addon.toyButtonCache[itemID] = toyActionButton
     end
 
@@ -539,13 +540,10 @@ function addon.CreateButton(itemID, parent, index)
     local tooltipFunc
 
     -- Preload texture and setup tooltip function
-    if itemID == 1233637 and addon.GetHousingHome() then
-        local home = addon.GetHousingHome()
-
-        texture = C_Spell.GetSpellTexture(itemID)
-            or addon.CONST.ADDON_ICON_TEXTURE
-
+    if home then
         tooltipFunc = function(self)
+            local currentHome = addon.GetHousingHome()
+            local houseName = currentHome and currentHome.houseName or "Your home"
             local returning = addon.CanReturnFromHousing()
 
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -554,7 +552,7 @@ function addon.CreateButton(itemID, parent, index)
             )
             GameTooltip:AddLine(
                 returning and "Return to your departure point."
-                    or home.houseName or "Your home",
+                    or houseName,
                 1, 1, 1
             )
             GameTooltip:Show()
@@ -584,9 +582,7 @@ function addon.CreateButton(itemID, parent, index)
         toyActionButton:SetScript("OnShow", UpdateHousingAction)
         toyActionButton:SetScript("PreClick", UpdateHousingAction)
         UpdateHousingAction(toyActionButton)
-        toyActionButton:SetAttribute("house-neighborhood-guid", home.neighborhoodGUID)
-        toyActionButton:SetAttribute("house-guid", home.houseGUID)
-        toyActionButton:SetAttribute("house-plot-id", home.plotID)
+        SetHousingDestination(toyActionButton, home)
         toyActionButton:SetAttribute("useOnKeyDown", true)
 
         toyActionButton._cdType = "housing"
@@ -645,9 +641,9 @@ function addon.CreateButton(itemID, parent, index)
         toyActionButton._cdID   = itemID
     end
 
-    -- Use the SetButtonTexture function with retry logic
+    -- Housing sets its icon through UpdateHousingAction.
     if toyActionButton._cdType ~= "housing" then
-        SetButtonTexture(toyActionButton, itemID, texture, 7)
+        SetButtonTexture(toyActionButton, itemID, texture, 7, isToy, isSpell)
     end
 
     -- Tooltip handling with caching check

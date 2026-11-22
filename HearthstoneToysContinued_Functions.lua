@@ -107,29 +107,29 @@ function addon.InitializeAvailableToys()
     end
 end
 
+local entryTypesByID = {}
+for _, entry in ipairs(addon.toyList) do
+    entryTypesByID[entry.id] = entry.type
+end
+
 -- Build the included list from saved settings and entry availability
 function addon.InitializeIncludedToys()
     wipe(addon.CONST.includeToys)
 
     for itemID, isIncluded in pairs(_G[addon.CONST.DB_NAME].toySettings) do
-        if isIncluded then
-            for _, entry in ipairs(addon.toyList) do
-                if entry.id == itemID then
-                    local isAvailable
+        local itemType = entryTypesByID[itemID]
+        if isIncluded and itemType then
+            local isAvailable
 
-                    if entry.type == "item" then
-                        -- Preserve the existing item-information check
-                        isAvailable = C_Item.GetItemInfo(itemID) ~= nil
-                    else
-                        isAvailable = addon.IsEntryAvailable(itemID, entry.type)
-                    end
+            if itemType == "item" then
+                -- Preserve the existing item-information check
+                isAvailable = C_Item.GetItemInfo(itemID) ~= nil
+            else
+                isAvailable = addon.IsEntryAvailable(itemID, itemType)
+            end
 
-                    if isAvailable then
-                        table.insert(addon.CONST.includeToys, itemID)
-                    end
-
-                    break
-                end
+            if isAvailable then
+                table.insert(addon.CONST.includeToys, itemID)
             end
         end
     end
@@ -205,17 +205,10 @@ function addon.CreateToyButtons()
     addon.pendingToyButtonRebuild = false
     addon.ClearToyButtons()
 
-    -- Map each entry ID to its type for availability checks
-    local entryTypes = {}
-
-    for _, entry in ipairs(addon.toyList) do
-        entryTypes[entry.id] = entry.type
-    end
-
     local index = 1
 
     for _, itemID in ipairs(addon.CONST.includeToys) do
-        local itemType = entryTypes[itemID]
+        local itemType = entryTypesByID[itemID]
 
         if itemType and addon.IsEntryAvailable(itemID, itemType) then
             local toyActionButton = addon.CreateButton(itemID, addon.toyFrame, index)
