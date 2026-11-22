@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.3] - 2026-12-01
+
+### Added
+
+- Added support for the Wood-Cursed Hearthstone, earned through Talebound.
+
+### Changed
+
+- Updated compatibility for WoW Retail 12.1.7.
+
 ## [1.2.2] - 2026-11-22
 
 ### Fixed

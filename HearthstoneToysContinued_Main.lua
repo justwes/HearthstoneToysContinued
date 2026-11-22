@@ -27,8 +27,10 @@ addon.CONST = {
     xPositionInput, yPositionInput,
     UpdateCooldown,
     optionsCategoryId,
-        ADDON_VERSION = "1.2.2", -- Update this with each release
-        ADDON_UPDATES = "Version 1.2.2\n\n" ..
+        ADDON_VERSION = "1.2.3", -- Update this with each release
+        ADDON_UPDATES = "Version 1.2.3\n\n" ..
+            "Added the Wood-Cursed Hearthstone and updated compatibility for WoW Retail 12.1.7.\n\n" ..
+            "Version 1.2.2\n\n" ..
             "Fixed first toy acquisition after login and missing travel icons.\n\n" ..
             "Improved travel-list refreshes, including the housing button.\n\n" ..
             "Version 1.2.1\n\n" ..
@@ -100,12 +102,11 @@ addon.toyList = {
     {id = 281136, type = "toy"}, -- Hiveborne Hearthstone
     {id = 281615, type = "toy"}, -- Shadeweaver's Hearthstone
     {id = 253629, type = "toy"}, -- Personal Key to the Arcantina
+    {id = 288912, type = "toy"}, -- Wood-Cursed Hearthstone
     {id = 6948, type = "item"}, -- Default Hearthstone
     {id = 37118, type = "item"}, -- Scroll of Recall
     {id = 44314, type = "item"}, -- Scroll of Recall II
     {id = 44315, type = "item"}, -- Scroll of Recall III
-    -- Enable when patch 12.1.7 goes live:
-    -- {id = 288912, type = "toy"}, -- Wood-Cursed Hearthstone
     {id = 556, type = "spell"}, -- Astral Recall
     {id = 18960, type = "spell", randomDefault = false}, -- Teleport: Moonglade (Druid)
     {id = 193753, type = "spell", randomDefault = false}, -- Dreamwalk (Druid)
